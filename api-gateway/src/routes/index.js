@@ -7,21 +7,11 @@ const logger = require('../utils/logger');
 
 const router = express.Router();
 
-/**
- * Builds a proxy middleware that:
- *  1. Re-serialises the parsed JSON body so POST/PUT reach the target intact
- *  2. Injects authenticated user context via x-user-* headers
- */
-const buildProxy = () =>
+const buildProxy = (targetUrl, serviceName) =>
   createProxyMiddleware({
-    target: config.USER_SERVICE_URL,
+    target: targetUrl,
     changeOrigin: true,
     onProxyReq(proxyReq, req) {
-      // 1. Set all headers BEFORE writing the body.
-      //    Calling proxyReq.write() flushes headers to the socket;
-      //    any setHeader() after that throws ERR_HTTP_HEADERS_SENT.
-
-      // Forward verified user context to downstream services
       if (req.user) {
         proxyReq.setHeader('x-user-id', req.user.id || '');
         proxyReq.setHeader('x-user-email', req.user.email || '');
@@ -29,7 +19,6 @@ const buildProxy = () =>
         proxyReq.setHeader('x-user-name', req.user.name || '');
       }
 
-      // 2. Re-attach body LAST (express.json() consumes the stream)
       if (req.body && Object.keys(req.body).length > 0) {
         const bodyData = JSON.stringify(req.body);
         proxyReq.setHeader('Content-Type', 'application/json');
@@ -39,11 +28,12 @@ const buildProxy = () =>
     },
     onError(err, req, res) {
       logger.error(`Proxy error for ${req.method} ${req.path}: ${err.message}`);
-      res.status(502).json({ message: 'User service is currently unavailable. Please try again later.' });
+      res.status(502).json({ message: `${serviceName} is currently unavailable. Please try again later.` });
     },
   });
 
-const userServiceProxy = buildProxy();
+const userServiceProxy = buildProxy(config.USER_SERVICE_URL, 'User service');
+const questionServiceProxy = buildProxy(config.QUESTION_SERVICE_URL, 'Question service');
 
 // ─── Public Routes (no auth) ────────────────────────────────────────────────
 router.use('/auth/register', userServiceProxy);
@@ -60,7 +50,10 @@ router.use('/users/students', verifyToken, roleMiddleware('ADMIN', 'SUPER_ADMIN'
 router.use('/users/all', verifyToken, roleMiddleware('SUPER_ADMIN'), userServiceProxy);
 router.use('/users/create-admin', verifyToken, roleMiddleware('SUPER_ADMIN'), userServiceProxy);
 
-// Catch-all protected proxy (future services / quiz routes)
+// ─── Question Service Routes (ADMIN + SUPER_ADMIN only) ─────────────────────
+router.use('/questions', verifyToken, roleMiddleware('ADMIN', 'SUPER_ADMIN'), questionServiceProxy);
+
+// Catch-all protected proxy (future services)
 router.use('/', verifyToken, userServiceProxy);
 
 module.exports = router;

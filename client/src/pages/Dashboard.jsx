@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { userAPI } from '../services/api';
+import { userAPI, questionAPI } from '../services/api';
+import QuestionList from '../components/QuestionList';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Super Admin Panel
@@ -184,9 +186,28 @@ const SuperAdminPanel = () => {
 // Admin (Year Coordinator) Panel
 // ─────────────────────────────────────────────────────────────────────────────
 const AdminPanel = () => {
+  const navigate = useNavigate();
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [stats, setStats] = useState({
+    Geometry: { Easy: 0, Medium: 0, Hard: 0, total: 0 },
+    Algebra: { Easy: 0, Medium: 0, Hard: 0, total: 0 },
+    Numbers: { Easy: 0, Medium: 0, Hard: 0, total: 0 },
+  });
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [selectedLesson, setSelectedLesson] = useState(null);
+
+  const fetchStats = async () => {
+    try {
+      const res = await questionAPI.getStats();
+      setStats(res.data.stats);
+    } catch {
+      // Stats loading failed silently
+    } finally {
+      setStatsLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -200,13 +221,22 @@ const AdminPanel = () => {
       }
     };
     fetchStudents();
+    fetchStats();
   }, []);
+
+  const lessonConfig = {
+    Geometry: { icon: '📐', color: 'lesson-geometry' },
+    Algebra: { icon: '🔢', color: 'lesson-algebra' },
+    Numbers: { icon: '🔣', color: 'lesson-numbers' },
+  };
+
+  const totalQuestions = stats.Geometry.total + stats.Algebra.total + stats.Numbers.total;
 
   return (
     <div className="dashboard-content">
       <div className="dashboard-header">
-        <h2>👨‍🏫 Year Coordinator Dashboard</h2>
-        <p>View your students and manage upcoming quizzes</p>
+        <h2>Year Coordinator Dashboard</h2>
+        <p>View your students and manage the question bank</p>
       </div>
 
       <div className="stats-grid">
@@ -215,15 +245,50 @@ const AdminPanel = () => {
           <p>Total Students</p>
         </div>
         <div className="stat-card accent">
-          <h3>🔜</h3>
-          <p>Active Quizzes</p>
+          <h3>{totalQuestions}</h3>
+          <p>Total Questions</p>
         </div>
+      </div>
+
+      <div className="section">
+        <div className="section-header">
+          <h3>Question Bank</h3>
+          <button
+            className="btn btn-success"
+            onClick={() => navigate('/coordinator/create-question')}
+          >
+            + Create Question
+          </button>
+        </div>
+
+        {statsLoading ? (
+          <div className="loading-text">Loading question bank...</div>
+        ) : (
+          <div className="lesson-grid">
+            {Object.entries(lessonConfig).map(([lesson, config]) => (
+              <div
+                key={lesson}
+                className={`lesson-card ${config.color}`}
+                onClick={() => setSelectedLesson(lesson)}
+              >
+                <div className="lesson-icon">{config.icon}</div>
+                <h4>{lesson}</h4>
+                <div className="difficulty-counts">
+                  <span className="count-easy">Easy: {stats[lesson].Easy}</span>
+                  <span className="count-medium">Medium: {stats[lesson].Medium}</span>
+                  <span className="count-hard">Hard: {stats[lesson].Hard}</span>
+                </div>
+                <div className="lesson-total">Total: {stats[lesson].total}</div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="section">
         <h3>Student List</h3>
         {loading ? (
-          <div className="loading-text">Loading students…</div>
+          <div className="loading-text">Loading students...</div>
         ) : error ? (
           <div className="alert alert-error">{error}</div>
         ) : students.length === 0 ? (
@@ -252,13 +317,12 @@ const AdminPanel = () => {
         )}
       </div>
 
-      <div className="section">
-        <h3>📚 Quiz Management</h3>
-        <div className="coming-soon-card">
-          <p>🔜 Quiz creation & management coming soon</p>
-          <p>You'll be able to create and assign quizzes to your students here.</p>
-        </div>
-      </div>
+      <QuestionList
+        isOpen={!!selectedLesson}
+        onClose={() => setSelectedLesson(null)}
+        lesson={selectedLesson}
+        onStatsUpdate={fetchStats}
+      />
     </div>
   );
 };
