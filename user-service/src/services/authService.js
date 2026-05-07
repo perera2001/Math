@@ -51,6 +51,7 @@ const loginUser = async (email, password) => {
     email: user.email,
     role: user.role,
     name: user.name,
+    grade: user.grade || null,
   });
 
   return { user, token };

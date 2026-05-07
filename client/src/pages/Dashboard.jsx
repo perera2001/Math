@@ -11,8 +11,9 @@ const SuperAdminPanel = () => {
   const [users, setUsers] = useState([]);
   const [listLoading, setListLoading] = useState(true);
   const [listError, setListError] = useState('');
+  const [deletingId, setDeletingId] = useState(null);
   const [showForm, setShowForm] = useState(false);
-  const [adminForm, setAdminForm] = useState({ name: '', email: '', password: '' });
+  const [adminForm, setAdminForm] = useState({ name: '', email: '', password: '', grade: '' });
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
   const [formLoading, setFormLoading] = useState(false);
@@ -34,6 +35,19 @@ const SuperAdminPanel = () => {
   const handleAdminFormChange = (e) =>
     setAdminForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
+  const handleDeleteUser = async (id, name) => {
+    if (!window.confirm(`Delete "${name}"? This cannot be undone.`)) return;
+    setDeletingId(id);
+    try {
+      await userAPI.deleteUser(id);
+      setUsers((prev) => prev.filter((u) => u._id !== id));
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to delete user.');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const handleCreateAdmin = async (e) => {
     e.preventDefault();
     setFormError('');
@@ -42,7 +56,7 @@ const SuperAdminPanel = () => {
     try {
       await userAPI.createAdmin(adminForm);
       setFormSuccess('Year Coordinator account created successfully!');
-      setAdminForm({ name: '', email: '', password: '' });
+      setAdminForm({ name: '', email: '', password: '', grade: '' });
       fetchUsers();
     } catch (err) {
       setFormError(err.response?.data?.message || 'Failed to create admin.');
@@ -131,6 +145,21 @@ const SuperAdminPanel = () => {
                     required
                   />
                 </div>
+                <div className="form-group">
+                  <label>Assign Grade</label>
+                  <select
+                    name="grade"
+                    value={adminForm.grade}
+                    onChange={handleAdminFormChange}
+                    required
+                    style={{ width: '100%', padding: '0.7rem 1rem', border: '2px solid #e1e4e8', borderRadius: '8px', fontSize: '1rem', outline: 'none', background: '#fff' }}
+                  >
+                    <option value="">-- Select Grade --</option>
+                    <option value="GRADE_9">Grade 9</option>
+                    <option value="GRADE_10">Grade 10</option>
+                    <option value="GRADE_11">Grade 11</option>
+                  </select>
+                </div>
               </div>
               <button type="submit" className="btn btn-success" disabled={formLoading}>
                 {formLoading ? 'Creating…' : 'Create Coordinator'}
@@ -157,7 +186,9 @@ const SuperAdminPanel = () => {
                   <th>Name</th>
                   <th>Email</th>
                   <th>Role</th>
+                  <th>Grade</th>
                   <th>Joined</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -170,7 +201,23 @@ const SuperAdminPanel = () => {
                         {u.role}
                       </span>
                     </td>
+                    <td>
+                      {u.grade
+                        ? <span className="role-badge role-admin">{u.grade.replace('_', ' ')}</span>
+                        : <span style={{ color: '#9ca3af' }}>—</span>}
+                    </td>
                     <td>{new Date(u.createdAt).toLocaleDateString()}</td>
+                    <td>
+                      {u.role !== 'SUPER_ADMIN' && (
+                        <button
+                          className="btn btn-danger"
+                          onClick={() => handleDeleteUser(u._id, u.name)}
+                          disabled={deletingId === u._id}
+                        >
+                          {deletingId === u._id ? 'Deleting…' : 'Delete'}
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -185,8 +232,11 @@ const SuperAdminPanel = () => {
 // ─────────────────────────────────────────────────────────────────────────────
 // Admin (Year Coordinator) Panel
 // ─────────────────────────────────────────────────────────────────────────────
+const GRADE_LABEL = { GRADE_9: 'Grade 9', GRADE_10: 'Grade 10', GRADE_11: 'Grade 11' };
+
 const AdminPanel = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -234,9 +284,19 @@ const AdminPanel = () => {
 
   return (
     <div className="dashboard-content">
-      <div className="dashboard-header">
-        <h2>Year Coordinator Dashboard</h2>
-        <p>View your students and manage the question bank</p>
+      <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+        <div>
+          <h2>👨‍🏫 {GRADE_LABEL[user?.grade] || 'Year Coordinator'} Dashboard</h2>
+          <p>You are managing <strong>{GRADE_LABEL[user?.grade] || 'your grade'}</strong> · View students and question bank</p>
+        </div>
+        <button
+          className="profile-icon-btn"
+          onClick={() => navigate('/coordinator/profile')}
+          title="View / Edit My Profile"
+        >
+          <span className="profile-icon-avatar">{user?.name?.charAt(0).toUpperCase()}</span>
+          <span className="profile-icon-label">My Profile</span>
+        </button>
       </div>
 
       <div className="stats-grid">

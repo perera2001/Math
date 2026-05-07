@@ -40,7 +40,7 @@ router.use('/auth/register', userServiceProxy);
 router.use('/auth/login', userServiceProxy);
 
 // ─── Protected Routes ────────────────────────────────────────────────────────
-// Any authenticated user can access their own profile
+// Any authenticated user can access / update their own profile
 router.use('/users/profile', verifyToken, userServiceProxy);
 
 // ADMIN + SUPER_ADMIN: view students
@@ -49,6 +49,7 @@ router.use('/users/students', verifyToken, roleMiddleware('ADMIN', 'SUPER_ADMIN'
 // SUPER_ADMIN only
 router.use('/users/all', verifyToken, roleMiddleware('SUPER_ADMIN'), userServiceProxy);
 router.use('/users/create-admin', verifyToken, roleMiddleware('SUPER_ADMIN'), userServiceProxy);
+router.delete('/users/:id', verifyToken, roleMiddleware('SUPER_ADMIN'), userServiceProxy);
 
 // ─── Question Service Routes (ADMIN + SUPER_ADMIN only) ─────────────────────
 router.use('/questions', verifyToken, roleMiddleware('ADMIN', 'SUPER_ADMIN'), questionServiceProxy);

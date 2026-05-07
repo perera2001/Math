@@ -872,6 +872,156 @@ body {
   }
 }
 
+/* ── Profile Icon Button (Admin Dashboard header) ────────────────── */
+.profile-icon-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--white);
+  border: 2px solid var(--border);
+  border-radius: 50px;
+  padding: 0.45rem 1rem 0.45rem 0.45rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.profile-icon-btn:hover {
+  border-color: var(--primary);
+  box-shadow: 0 2px 10px rgba(67, 97, 238, 0.18);
+  transform: translateY(-1px);
+}
+
+.profile-icon-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.profile-icon-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* ── Admin Profile Page ───────────────────────────────────────────── */
+.profile-page {
+  min-height: calc(100vh - 62px);
+  background: var(--bg);
+}
+
+.profile-page-header {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  padding: 1.25rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.profile-page-header h2 {
+  color: #fff;
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.btn-back {
+  background: rgba(255,255,255,0.12);
+  color: #e0e7ff;
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 0.45rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.btn-back:hover { background: rgba(255,255,255,0.22); }
+
+.profile-page-body {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.profile-hero-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 2rem;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.profile-hero-avatar {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.profile-hero-info { flex: 1; min-width: 160px; }
+.profile-hero-info h3 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.2rem; }
+.profile-hero-info p  { color: var(--text-muted); margin-bottom: 0.4rem; }
+
+.profile-hero-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-width: 200px;
+}
+
+.profile-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  margin-top: 0.5rem;
+}
+
+.profile-detail-item {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.detail-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
 /* ── Responsive ──────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .lesson-grid {
@@ -917,4 +1067,10 @@ body {
     width: 100%;
     order: 1;
   }
+
+  .profile-hero-card { flex-direction: column; align-items: flex-start; }
+  .profile-hero-meta { min-width: unset; width: 100%; }
+  .profile-page-body { padding: 1rem; }
+  .profile-page-header { padding: 1rem; }
+  .profile-icon-label { display: none; }
 }

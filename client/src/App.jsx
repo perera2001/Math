@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import CreateQuestion from './pages/CreateQuestion';
+import AdminProfile from './pages/AdminProfile';
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
 
@@ -38,6 +39,14 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute allowedRoles={['ADMIN', 'SUPER_ADMIN']}>
               <CreateQuestion />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/coordinator/profile"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <AdminProfile />
             </ProtectedRoute>
           }
         />

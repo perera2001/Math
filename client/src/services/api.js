@@ -42,9 +42,11 @@ export const authAPI = {
 // ─── User Endpoints ───────────────────────────────────────────────────────────
 export const userAPI = {
   getProfile: () => api.get('/users/profile'),
+  updateProfile: (data) => api.put('/users/profile', data),
   getAllUsers: () => api.get('/users/all'),
   getStudents: () => api.get('/users/students'),
   createAdmin: (data) => api.post('/users/create-admin', data),
+  deleteUser: (id) => api.delete(`/users/${id}`),
 };
 
 // ─── Question Endpoints ───────────────────────────────────────────────────────
