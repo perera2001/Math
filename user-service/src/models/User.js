@@ -32,6 +32,14 @@ const userSchema = new mongoose.Schema(
       },
       default: 'USER',
     },
+    grade: {
+      type: String,
+      enum: {
+        values: ['GRADE_9', 'GRADE_10', 'GRADE_11', null],
+        message: 'Grade must be GRADE_9, GRADE_10, or GRADE_11',
+      },
+      default: null,
+    },
   },
   {
     timestamps: true,

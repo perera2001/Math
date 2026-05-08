@@ -42,9 +42,21 @@ export const authAPI = {
 // ─── User Endpoints ───────────────────────────────────────────────────────────
 export const userAPI = {
   getProfile: () => api.get('/users/profile'),
+  updateProfile: (data) => api.put('/users/profile', data),
   getAllUsers: () => api.get('/users/all'),
   getStudents: () => api.get('/users/students'),
   createAdmin: (data) => api.post('/users/create-admin', data),
+  deleteUser: (id) => api.delete(`/users/${id}`),
+};
+
+// ─── Question Endpoints ───────────────────────────────────────────────────────
+export const questionAPI = {
+  create: (data) => api.post('/questions', data),
+  getAll: (params) => api.get('/questions', { params }),
+  getOne: (id) => api.get(`/questions/${id}`),
+  update: (id, data) => api.put(`/questions/${id}`, data),
+  delete: (id) => api.delete(`/questions/${id}`),
+  getStats: () => api.get('/questions/stats'),
 };
 
 export default api;

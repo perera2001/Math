@@ -46,8 +46,15 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  // Call after a successful profile update to keep localStorage in sync
+  const updateUser = (updatedUser) => {
+    const merged = { ...user, ...updatedUser };
+    localStorage.setItem('user', JSON.stringify(merged));
+    setUser(merged);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, login, register, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
