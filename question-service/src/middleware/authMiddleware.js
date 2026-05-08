@@ -13,6 +13,7 @@ const verifyUser = (req, res, next) => {
     email: userEmail,
     role: userRole,
     name: userName,
+    grade: req.headers['x-user-grade'] || null,
   };
 
   next();

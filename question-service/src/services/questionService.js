@@ -19,6 +19,10 @@ const getAllQuestions = async (filters = {}) => {
     query.difficulty = filters.difficulty;
   }
 
+  if (filters.grade !== undefined && filters.grade !== null) {
+    query.grade = filters.grade;
+  }
+
   const questions = await Question.find(query).sort({ createdAt: -1 });
   return questions;
 };
@@ -61,15 +65,21 @@ const deleteQuestion = async (id) => {
   return question;
 };
 
-const getQuestionStats = async () => {
-  const stats = await Question.aggregate([
-    {
-      $group: {
-        _id: { lesson: '$lesson', difficulty: '$difficulty' },
-        count: { $sum: 1 },
-      },
+const getQuestionStats = async (grade = null) => {
+  const pipeline = [];
+
+  if (grade !== null && grade !== undefined) {
+    pipeline.push({ $match: { grade } });
+  }
+
+  pipeline.push({
+    $group: {
+      _id: { lesson: '$lesson', difficulty: '$difficulty' },
+      count: { $sum: 1 },
     },
-  ]);
+  });
+
+  const stats = await Question.aggregate(pipeline);
 
   const result = {
     Geometry: { Easy: 0, Medium: 0, Hard: 0, total: 0 },

@@ -1,8 +1,20 @@
 const questionService = require('../services/questionService');
 
+// Convert 'GRADE_9' / 'GRADE_10' / 'GRADE_11' to 9 / 10 / 11
+const parseUserGrade = (gradeStr) => {
+  if (!gradeStr) return null;
+  const match = String(gradeStr).match(/(\d+)/);
+  return match ? parseInt(match[1], 10) : null;
+};
+
 const create = async (req, res, next) => {
   try {
-    const { lesson, difficulty, questionText, answers, grade } = req.body;
+    const { lesson, difficulty, questionText, answers } = req.body;
+    // ADMIN: grade is always taken from their profile; SUPER_ADMIN may pass it
+    const grade =
+      req.user.role === 'ADMIN'
+        ? parseUserGrade(req.user.grade)
+        : req.body.grade ?? null;
 
     if (!lesson || !difficulty || !questionText || !answers) {
       return res.status(400).json({
@@ -40,7 +52,10 @@ const create = async (req, res, next) => {
 const getAll = async (req, res, next) => {
   try {
     const { lesson, difficulty } = req.query;
-    const questions = await questionService.getAllQuestions({ lesson, difficulty });
+    // ADMIN sees only their own grade's questions; SUPER_ADMIN sees all
+    const gradeFilter =
+      req.user.role === 'ADMIN' ? parseUserGrade(req.user.grade) : null;
+    const questions = await questionService.getAllQuestions({ lesson, difficulty, grade: gradeFilter });
 
     return res.status(200).json({
       message: 'Questions retrieved successfully',
@@ -115,7 +130,9 @@ const remove = async (req, res, next) => {
 
 const getStats = async (req, res, next) => {
   try {
-    const stats = await questionService.getQuestionStats();
+    const gradeFilter =
+      req.user.role === 'ADMIN' ? parseUserGrade(req.user.grade) : null;
+    const stats = await questionService.getQuestionStats(gradeFilter);
 
     return res.status(200).json({
       message: 'Question stats retrieved successfully',

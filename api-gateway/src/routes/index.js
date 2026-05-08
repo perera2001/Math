@@ -17,6 +17,7 @@ const buildProxy = (targetUrl, serviceName) =>
         proxyReq.setHeader('x-user-email', req.user.email || '');
         proxyReq.setHeader('x-user-role', req.user.role || '');
         proxyReq.setHeader('x-user-name', req.user.name || '');
+        proxyReq.setHeader('x-user-grade', req.user.grade || '');
       }
 
       if (req.body && Object.keys(req.body).length > 0) {
