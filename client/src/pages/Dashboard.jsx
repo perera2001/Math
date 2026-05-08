@@ -391,58 +391,25 @@ const AdminPanel = () => {
 // Student Panel
 // ─────────────────────────────────────────────────────────────────────────────
 const StudentPanel = () => {
+  const navigate = useNavigate();
   const { user } = useAuth();
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const res = await userAPI.getProfile();
-        setProfile(res.data.user);
-      } catch {
-        // Fall back to data stored in AuthContext
-        setProfile(user);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProfile();
-  }, [user]);
-
-  const data = profile || user;
 
   return (
     <div className="dashboard-content">
-      <div className="dashboard-header">
-        <h2>🎓 Student Dashboard</h2>
-        <p>Welcome back, {data?.name}!</p>
-      </div>
-
-      {loading ? (
-        <div className="loading-text">Loading profile…</div>
-      ) : (
-        <div className="profile-card">
-          <div className="profile-avatar">
-            {data?.name?.charAt(0).toUpperCase()}
-          </div>
-          <div className="profile-info">
-            <h3>{data?.name}</h3>
-            <p>{data?.email}</p>
-            <span className="role-badge role-user">Student</span>
-          </div>
-          <div className="profile-meta">
-            <div className="meta-item">
-              <span className="meta-label">Member since:</span>
-              <span>
-                {data?.createdAt
-                  ? new Date(data.createdAt).toLocaleDateString()
-                  : 'N/A'}
-              </span>
-            </div>
-          </div>
+      <div className="dashboard-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+        <div>
+          <h2>🎓 Student Dashboard</h2>
+          <p>Welcome back, <strong>{user?.name}</strong>!</p>
         </div>
-      )}
+        <button
+          className="profile-icon-btn"
+          onClick={() => navigate('/student/profile')}
+          title="View / Edit My Profile"
+        >
+          <span className="profile-icon-avatar">{user?.name?.charAt(0).toUpperCase()}</span>
+          <span className="profile-icon-label">My Profile</span>
+        </button>
+      </div>
 
       <div className="section">
         <h3>📝 My Quizzes</h3>

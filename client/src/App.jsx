@@ -6,6 +6,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import CreateQuestion from './pages/CreateQuestion';
 import AdminProfile from './pages/AdminProfile';
+import StudentProfile from './pages/StudentProfile';
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
 
@@ -47,6 +48,14 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute allowedRoles={['ADMIN']}>
               <AdminProfile />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/student/profile"
+          element={
+            <ProtectedRoute allowedRoles={['USER']}>
+              <StudentProfile />
             </ProtectedRoute>
           }
         />
