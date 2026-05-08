@@ -35,6 +35,7 @@ const buildProxy = (targetUrl, serviceName) =>
 
 const userServiceProxy = buildProxy(config.USER_SERVICE_URL, 'User service');
 const questionServiceProxy = buildProxy(config.QUESTION_SERVICE_URL, 'Question service');
+const quizServiceProxy = buildProxy(config.QUIZ_SERVICE_URL, 'Quiz service');
 
 // ─── Public Routes (no auth) ────────────────────────────────────────────────
 router.use('/auth/register', userServiceProxy);
@@ -54,6 +55,9 @@ router.delete('/users/:id', verifyToken, roleMiddleware('SUPER_ADMIN'), userServ
 
 // ─── Question Service Routes (ADMIN + SUPER_ADMIN only) ─────────────────────
 router.use('/questions', verifyToken, roleMiddleware('ADMIN', 'SUPER_ADMIN'), questionServiceProxy);
+
+// ─── Quiz Service Routes (students only) ─────────────────────────────────────
+router.use('/quiz', verifyToken, roleMiddleware('USER'), quizServiceProxy);
 
 // Catch-all protected proxy (future services)
 router.use('/', verifyToken, userServiceProxy);

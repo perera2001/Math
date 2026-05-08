@@ -43,6 +43,7 @@ app.listen(config.PORT, () => {
   logger.info(`API Gateway is running on http://localhost:${config.PORT}`);
   logger.info(`Proxying /api/users/* → ${config.USER_SERVICE_URL}`);
   logger.info(`Proxying /api/questions/* → ${config.QUESTION_SERVICE_URL}`);
+  logger.info(`Proxying /api/quiz/* → ${config.QUIZ_SERVICE_URL}`);
 });
 
 module.exports = app;
