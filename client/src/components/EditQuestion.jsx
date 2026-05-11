@@ -5,6 +5,17 @@ import Modal from './Modal';
 const LESSONS = ['Geometry', 'Algebra', 'Numbers'];
 const DIFFICULTIES = ['Easy', 'Medium', 'Hard'];
 
+// Handle both old (string) and new (object) formats
+const getEnText = (val) => {
+  if (!val) return '';
+  if (typeof val === 'string') return val;
+  return val.en || '';
+};
+const getLangText = (val, lang) => {
+  if (!val || typeof val === 'string') return '';
+  return val[lang] || '';
+};
+
 const EditQuestion = ({ isOpen, onClose, question, onSave }) => {
   const [form, setForm] = useState({
     lesson: '',
@@ -15,14 +26,35 @@ const EditQuestion = ({ isOpen, onClose, question, onSave }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const [translating, setTranslating] = useState(false);
+  const [translateError, setTranslateError] = useState('');
+  const [siQuestion, setSiQuestion] = useState('');
+  const [siAnswers, setSiAnswers] = useState([]);
+  const [taQuestion, setTaQuestion] = useState('');
+  const [taAnswers, setTaAnswers] = useState([]);
+  const [showTranslations, setShowTranslations] = useState(false);
+
   useEffect(() => {
     if (question) {
       setForm({
         lesson: question.lesson,
         difficulty: question.difficulty,
-        questionText: question.questionText,
+        questionText: getEnText(question.questionText),
       });
-      setAnswers(question.answers.map((a) => ({ ...a })));
+      setAnswers(
+        question.answers.map((a) => ({
+          text: getEnText(a.text),
+          isCorrect: a.isCorrect,
+        }))
+      );
+      const si = getLangText(question.questionText, 'si');
+      const ta = getLangText(question.questionText, 'ta');
+      setSiQuestion(si);
+      setTaQuestion(ta);
+      setSiAnswers(question.answers.map((a) => getLangText(a.text, 'si')));
+      setTaAnswers(question.answers.map((a) => getLangText(a.text, 'ta')));
+      const hasTranslations = si || ta;
+      setShowTranslations(!!hasTranslations);
     }
   }, [question]);
 
@@ -44,6 +76,8 @@ const EditQuestion = ({ isOpen, onClose, question, onSave }) => {
 
   const addAnswer = () => {
     setAnswers((prev) => [...prev, { text: '', isCorrect: false }]);
+    setSiAnswers((prev) => [...prev, '']);
+    setTaAnswers((prev) => [...prev, '']);
   };
 
   const removeAnswer = (index) => {
@@ -55,6 +89,33 @@ const EditQuestion = ({ isOpen, onClose, question, onSave }) => {
       }
       return updated;
     });
+    setSiAnswers((prev) => prev.filter((_, i) => i !== index));
+    setTaAnswers((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const canTranslate =
+    form.questionText.trim().length >= 10 &&
+    answers.every((a) => a.text.trim()) &&
+    answers.some((a) => a.isCorrect);
+
+  const handleTranslate = async () => {
+    setTranslating(true);
+    setTranslateError('');
+    try {
+      const res = await questionAPI.translate({
+        questionText: form.questionText.trim(),
+        answers: answers.map((a) => a.text.trim()),
+      });
+      setSiQuestion(res.data.si.questionText);
+      setSiAnswers(res.data.si.answers);
+      setTaQuestion(res.data.ta.questionText);
+      setTaAnswers(res.data.ta.answers);
+      setShowTranslations(true);
+    } catch {
+      setTranslateError('Translation failed. You can save in English only, or try again.');
+    } finally {
+      setTranslating(false);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -78,8 +139,19 @@ const EditQuestion = ({ isOpen, onClose, question, onSave }) => {
       await questionAPI.update(question._id, {
         lesson: form.lesson,
         difficulty: form.difficulty,
-        questionText: form.questionText,
-        answers: filledAnswers,
+        questionText: {
+          en: form.questionText.trim(),
+          si: siQuestion,
+          ta: taQuestion,
+        },
+        answers: filledAnswers.map((a, idx) => ({
+          text: {
+            en: a.text.trim(),
+            si: siAnswers[idx] || '',
+            ta: taAnswers[idx] || '',
+          },
+          isCorrect: a.isCorrect,
+        })),
       });
       onSave();
     } catch (err) {
@@ -177,6 +249,113 @@ const EditQuestion = ({ isOpen, onClose, question, onSave }) => {
             </div>
           ))}
         </div>
+
+        {/* Translate / expand translations */}
+        <div style={{ margin: '16px 0' }}>
+          {!showTranslations ? (
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
+              onClick={() => {
+                setShowTranslations(true);
+                if (!siQuestion && !taQuestion) handleTranslate();
+              }}
+              disabled={!canTranslate || translating}
+            >
+              {translating ? 'Translating...' : '🌐 Add Translations'}
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
+              onClick={handleTranslate}
+              disabled={!canTranslate || translating}
+            >
+              {translating ? 'Translating...' : '🔄 Retranslate'}
+            </button>
+          )}
+          {translateError && (
+            <p style={{ color: '#e53e3e', fontSize: '0.875rem', marginTop: '6px' }}>
+              {translateError}
+            </p>
+          )}
+        </div>
+
+        {showTranslations && (
+          <>
+            {/* Sinhala */}
+            <div style={{ border: '1px solid #d6bcfa', borderRadius: '8px', padding: '16px', marginBottom: '16px', background: '#faf5ff' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                <strong>සිංහල (Sinhala)</strong>
+                {siQuestion && (
+                  <span style={{ fontSize: '0.75rem', background: '#6b46c1', color: '#fff', padding: '2px 8px', borderRadius: '9999px' }}>✨ AI Generated</span>
+                )}
+              </div>
+              <p style={{ fontSize: '0.8rem', color: '#718096', margin: '0 0 12px' }}>You can edit before saving</p>
+              <div className="form-group">
+                <label>Question Text</label>
+                <textarea
+                  value={siQuestion}
+                  onChange={(e) => setSiQuestion(e.target.value)}
+                  rows={3}
+                  className="form-textarea"
+                />
+              </div>
+              {answers.map((_, idx) => (
+                <div key={idx} className="form-group">
+                  <label>Answer {answerLabels[idx]}</label>
+                  <input
+                    type="text"
+                    value={siAnswers[idx] || ''}
+                    onChange={(e) => {
+                      const updated = [...siAnswers];
+                      updated[idx] = e.target.value;
+                      setSiAnswers(updated);
+                    }}
+                    className="answer-input"
+                    style={{ width: '100%' }}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Tamil */}
+            <div style={{ border: '1px solid #fbd38d', borderRadius: '8px', padding: '16px', marginBottom: '16px', background: '#fffaf0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                <strong>தமிழ் (Tamil)</strong>
+                {taQuestion && (
+                  <span style={{ fontSize: '0.75rem', background: '#c05621', color: '#fff', padding: '2px 8px', borderRadius: '9999px' }}>✨ AI Generated</span>
+                )}
+              </div>
+              <p style={{ fontSize: '0.8rem', color: '#718096', margin: '0 0 12px' }}>You can edit before saving</p>
+              <div className="form-group">
+                <label>Question Text</label>
+                <textarea
+                  value={taQuestion}
+                  onChange={(e) => setTaQuestion(e.target.value)}
+                  rows={3}
+                  className="form-textarea"
+                />
+              </div>
+              {answers.map((_, idx) => (
+                <div key={idx} className="form-group">
+                  <label>Answer {answerLabels[idx]}</label>
+                  <input
+                    type="text"
+                    value={taAnswers[idx] || ''}
+                    onChange={(e) => {
+                      const updated = [...taAnswers];
+                      updated[idx] = e.target.value;
+                      setTaAnswers(updated);
+                    }}
+                    className="answer-input"
+                    style={{ width: '100%' }}
+                  />
+                </div>
+              ))}
+            </div>
+          </>
+        )}
 
         <div className="form-actions">
           <button type="button" className="btn btn-outline" onClick={onClose}>

@@ -3,9 +3,13 @@ const mongoose = require('mongoose');
 const questionItemSchema = new mongoose.Schema(
   {
     questionId: { type: mongoose.Schema.Types.ObjectId },
-    questionText: { type: String },
+    questionText: {
+      en: { type: String, default: '' },
+      si: { type: String, default: '' },
+      ta: { type: String, default: '' },
+    },
     // answers snapshot — isCorrect stored server-side only, never sent to client
-    answers: [{ text: String, isCorrect: Boolean }],
+    answers: [{ text: { en: String, si: String, ta: String }, isCorrect: Boolean }],
     userAnswerIndex: { type: Number, default: null },
     isCorrect: { type: Boolean, default: null },
     timeSpent: { type: Number, default: 0 },

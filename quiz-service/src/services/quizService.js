@@ -7,8 +7,12 @@ const QuestionSchema = new mongoose.Schema(
   {
     lesson: String,
     difficulty: String,
-    questionText: String,
-    answers: [{ text: String, isCorrect: Boolean }],
+    questionText: {
+      en: String,
+      si: String,
+      ta: String,
+    },
+    answers: [{ text: { en: String, si: String, ta: String }, isCorrect: Boolean }],
     grade: Number,
   },
   { collection: 'questions' }
