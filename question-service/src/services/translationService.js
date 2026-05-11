@@ -1,4 +1,4 @@
-const Anthropic = require('@anthropic-ai/sdk');
+const Anthropic = require("@anthropic-ai/sdk");
 
 const SYSTEM_PROMPT = `You are a professional translator specializing in Sri Lankan Grade 9 mathematics textbook content.
 Translate the given math question and answers from English to both Sinhala (si) and Tamil (ta).
@@ -29,7 +29,7 @@ const translateQuestion = async ({ questionText, answers }) => {
 
   const modelId = process.env.ANTHROPIC_MODEL
     ? `${process.env.ANTHROPIC_MODEL}-20251001`
-    : 'claude-haiku-4-5-20251001';
+    : "claude-haiku-4-5-20251001";
 
   let raw;
   try {
@@ -39,29 +39,29 @@ const translateQuestion = async ({ questionText, answers }) => {
       system: SYSTEM_PROMPT,
       messages: [
         {
-          role: 'user',
+          role: "user",
           content: JSON.stringify({ questionText, answers }),
         },
       ],
     });
     raw = response.content[0].text;
   } catch (apiErr) {
-    const err = new Error('Translation failed');
+    const err = new Error("Translation failed");
     err.statusCode = 502;
     throw err;
   }
 
   // Strip markdown fences defensively
   const cleaned = raw
-    .replace(/^```(?:json)?\s*/i, '')
-    .replace(/\s*```$/i, '')
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/i, "")
     .trim();
 
   let parsed;
   try {
     parsed = JSON.parse(cleaned);
   } catch {
-    const err = new Error('Translation failed');
+    const err = new Error("Translation failed");
     err.statusCode = 502;
     throw err;
   }
@@ -74,7 +74,7 @@ const translateQuestion = async ({ questionText, answers }) => {
     parsed.si.answers.length !== answers.length ||
     parsed.ta.answers.length !== answers.length
   ) {
-    const err = new Error('Translation failed');
+    const err = new Error("Translation failed");
     err.statusCode = 502;
     throw err;
   }
