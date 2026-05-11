@@ -96,9 +96,7 @@ const QuizResults = () => {
     );
   }
 
-  const correctCount = result.totalScore !== undefined
-    ? (result.perQuestion ? result.perQuestion.filter((q) => q.isCorrect).length : '—')
-    : '—';
+  const correctCount = result.correctCount ?? '—';
 
   const lifelinesCount = result.lifelinesUsed
     ? Object.values(result.lifelinesUsed).filter(Boolean).length
@@ -153,7 +151,7 @@ const QuizResults = () => {
         >
           {[
             { label: 'Correct', value: `${correctCount}/8`, icon: '✅' },
-            { label: 'Time Used', value: fmt(result.timeUsed), icon: '⏱' },
+            { label: 'Time Used', value: fmt(result.timeSpentTotal), icon: '⏱' },
             { label: 'Max Streak', value: result.maxStreak ?? 0, icon: '🔥' },
             { label: 'Lifelines', value: lifelinesCount, icon: '🛟' },
           ].map((s) => (

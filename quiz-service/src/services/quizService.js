@@ -204,6 +204,8 @@ const completeQuiz = async ({ sessionId, timeSpentTotal, userId }) => {
 
   const stars = _calculateStars(session, timeSpentTotal, correctCount);
   session.starsEarned = stars;
+  session.correctCount = correctCount;
+  session.timeSpentTotal = timeSpentTotal || 0;
   session.status = 'completed';
   session.completedAt = new Date();
   await session.save();

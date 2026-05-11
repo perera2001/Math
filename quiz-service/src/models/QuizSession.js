@@ -27,6 +27,8 @@ const quizSessionSchema = new mongoose.Schema(
     currentStreak: { type: Number, default: 0 },
     maxStreak: { type: Number, default: 0 },
     starsEarned: { type: Number, default: 0 },
+    correctCount: { type: Number, default: 0 },
+    timeSpentTotal: { type: Number, default: 0 },
     status: {
       type: String,
       enum: ['in_progress', 'completed', 'abandoned'],
