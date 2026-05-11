@@ -24,6 +24,15 @@ const Navbar = () => {
       <div className="navbar-links">
         {user ? (
           <>
+            {user.role === 'USER' && (
+              <>
+                <Link to="/student/dashboard">Dashboard</Link>
+                <Link to="/student/profile">My Profile</Link>
+              </>
+            )}
+            {(user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') && (
+              <Link to="/dashboard">Dashboard</Link>
+            )}
             <span className="user-chip">{roleLabel[user.role] || user.role} · {user.name}</span>
             <button onClick={handleLogout} className="btn btn-danger">Logout</button>
           </>

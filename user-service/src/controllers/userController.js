@@ -102,6 +102,22 @@ const deleteUserController = async (req, res, next) => {
   }
 };
 
+/**
+ * DELETE /api/users/profile  –  Any authenticated user (own account)
+ */
+const deleteOwnProfileController = async (req, res, next) => {
+  try {
+    const userId = req.headers['x-user-id'];
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized. User context missing.' });
+    }
+    await deleteUser(userId);
+    return res.status(200).json({ message: 'Account deleted successfully' });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getProfile,
   updateProfileController,
@@ -109,4 +125,5 @@ module.exports = {
   getStudentsController,
   createAdminController,
   deleteUserController,
+  deleteOwnProfileController,
 };

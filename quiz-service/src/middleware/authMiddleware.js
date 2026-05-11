@@ -13,24 +13,23 @@ const verifyUser = (req, res, next) => {
     email: userEmail,
     role: userRole,
     name: userName,
-    grade: req.headers['x-user-grade'] || null,
   };
 
   next();
 };
 
-const requireCoordinator = (req, res, next) => {
+const requireStudent = (req, res, next) => {
   if (!req.user) {
     return res.status(401).json({ message: 'Unauthorized. Please log in.' });
   }
 
-  if (req.user.role !== 'ADMIN' && req.user.role !== 'SUPER_ADMIN') {
+  if (req.user.role !== 'USER') {
     return res.status(403).json({
-      message: `Forbidden. Only Year Coordinators can access this resource. Your role: ${req.user.role}`,
+      message: `Forbidden. Only students can access this resource. Your role: ${req.user.role}`,
     });
   }
 
   next();
 };
 
-module.exports = { verifyUser, requireCoordinator };
+module.exports = { verifyUser, requireStudent };

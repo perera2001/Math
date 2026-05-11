@@ -1,16 +1,29 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { questionAPI } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 const LESSONS = ['Geometry', 'Algebra', 'Numbers'];
 const DIFFICULTIES = ['Easy', 'Medium', 'Hard'];
+const GRADES = [9, 10, 11];
+
+const parseGradeNumber = (gradeStr) => {
+  if (!gradeStr) return null;
+  const match = String(gradeStr).match(/(\d+)/);
+  return match ? parseInt(match[1], 10) : null;
+};
 
 const CreateQuestion = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isSuperAdmin = user?.role === 'SUPER_ADMIN';
+  const userGradeNumber = parseGradeNumber(user?.grade);
+
   const [form, setForm] = useState({
     lesson: '',
     difficulty: '',
     questionText: '',
+    grade: isSuperAdmin ? '' : userGradeNumber,
   });
   const [answers, setAnswers] = useState([
     { text: '', isCorrect: false },
@@ -75,16 +88,23 @@ const CreateQuestion = () => {
       return;
     }
 
+    if (isSuperAdmin && !form.grade) {
+      setError('Please select a grade.');
+      return;
+    }
+
     setLoading(true);
     try {
-      await questionAPI.create({
+      const payload = {
         lesson: form.lesson,
         difficulty: form.difficulty,
         questionText: form.questionText,
         answers: filledAnswers,
-      });
+      };
+      if (isSuperAdmin) payload.grade = Number(form.grade);
+      await questionAPI.create(payload);
       setSuccess('Question created successfully!');
-      setForm({ lesson: '', difficulty: '', questionText: '' });
+      setForm({ lesson: '', difficulty: '', questionText: '', grade: isSuperAdmin ? '' : userGradeNumber });
       setAnswers([
         { text: '', isCorrect: false },
         { text: '', isCorrect: false },
@@ -113,6 +133,30 @@ const CreateQuestion = () => {
           {success && <div className="alert alert-success">{success}</div>}
 
           <form onSubmit={handleSubmit}>
+            <div className="form-row">
+              <div className="form-group">
+                <label>Grade</label>
+                {isSuperAdmin ? (
+                  <select
+                    name="grade"
+                    value={form.grade}
+                    onChange={handleFormChange}
+                    className="form-select"
+                    required
+                  >
+                    <option value="">Select grade...</option>
+                    {GRADES.map((g) => (
+                      <option key={g} value={g}>Grade {g}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="form-static">
+                    {userGradeNumber ? `Grade ${userGradeNumber}` : 'No grade assigned'}
+                  </div>
+                )}
+              </div>
+            </div>
+
             <div className="form-row">
               <div className="form-group">
                 <label>Lesson *</label>

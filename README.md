@@ -9,6 +9,7 @@ MATH/
 ├── api-gateway/          (Port 5000) - Routes requests to microservices
 ├── user-service/         (Port 5001) - Authentication & user management
 ├── question-service/     (Port 5003) - Question bank management
+├── quiz-service/         (Port 5004) - Quiz sessions, scoring & stats
 └── client/               (Port 5173) - React frontend
 ```
 
@@ -48,34 +49,26 @@ MONGODB_URI=mongodb://localhost:27017/mathsapp
 JWT_SECRET=your_jwt_secret_here
 ```
 
-> **Important:** Use the same `JWT_SECRET` across all services.
+**quiz-service/.env**
+```
+PORT=5004
+MONGODB_URI=mongodb://localhost:27017/mathsapp
+JWT_SECRET=your_jwt_secret_here
+```
+
+> **Important:** Use the same `JWT_SECRET` and `MONGODB_URI` across all services.
 
 ### 2. Install Dependencies
 
 ```bash
-# Install all services
-cd api-gateway && npm install && cd ..
-cd user-service && npm install && cd ..
-cd question-service && npm install && cd ..
-cd client && npm install && cd ..
+npm install          # installs concurrently at root
+npm run install:all  # installs deps in every service + client
 ```
 
-### 3. Run Services
-
-Open 4 terminals and run each service:
+### 3. Run All Services (single command)
 
 ```bash
-# Terminal 1 - API Gateway
-cd api-gateway && npm run dev
-
-# Terminal 2 - User Service
-cd user-service && npm run dev
-
-# Terminal 3 - Question Service
-cd question-service && npm run dev
-
-# Terminal 4 - React Client
-cd client && npm run dev
+npm run dev
 ```
 
 ## Features

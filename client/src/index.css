@@ -590,6 +590,17 @@ body {
   min-height: 100px;
 }
 
+.form-static {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+  background: #f8f9fa;
+  color: var(--text-muted, #6c757d);
+  font-weight: 600;
+}
+
 .form-actions {
   display: flex;
   gap: 1rem;

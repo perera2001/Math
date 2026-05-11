@@ -43,6 +43,7 @@ export const authAPI = {
 export const userAPI = {
   getProfile: () => api.get('/users/profile'),
   updateProfile: (data) => api.put('/users/profile', data),
+  deleteSelf: () => api.delete('/users/profile'),
   getAllUsers: () => api.get('/users/all'),
   getStudents: () => api.get('/users/students'),
   createAdmin: (data) => api.post('/users/create-admin', data),

@@ -6,6 +6,7 @@ const {
   getStudentsController,
   createAdminController,
   deleteUserController,
+  deleteOwnProfileController,
 } = require('../controllers/userController');
 
 const router = express.Router();
@@ -15,6 +16,9 @@ router.get('/profile', getProfile);
 
 // PUT /api/users/profile  –  Any authenticated user (own profile only)
 router.put('/profile', updateProfileController);
+
+// DELETE /api/users/profile  –  Any authenticated user (own account)
+router.delete('/profile', deleteOwnProfileController);
 
 // GET /api/users/students  –  ADMIN + SUPER_ADMIN (role check in gateway)
 router.get('/students', getStudentsController);

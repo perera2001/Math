@@ -1,0 +1,13 @@
+{
+  "name": "mathsapp",
+  "version": "1.0.0",
+  "description": "MathsApp Microservices — root dev runner",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently --names \"GW,USER,QUESTION,QUIZ,CLIENT\" --prefix-colors \"cyan,green,yellow,magenta,blue\" \"npm run dev --prefix api-gateway\" \"npm run dev --prefix user-service\" \"npm run dev --prefix question-service\" \"npm run dev --prefix quiz-service\" \"npm run dev --prefix client\"",
+    "install:all": "npm install --prefix api-gateway && npm install --prefix user-service && npm install --prefix question-service && npm install --prefix quiz-service && npm install --prefix client"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
