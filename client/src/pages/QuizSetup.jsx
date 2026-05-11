@@ -21,6 +21,12 @@ const TIME_MODES = [
   { value: 'unlimited', icon: '🐢', label: 'Unlimited', sub: 'Practice · 0.5× Score' },
 ];
 
+const LANGUAGES = [
+  { value: 'en', badge: 'EN', label: 'English', sub: 'English' },
+  { value: 'si', badge: 'සි', label: 'සිංහල', sub: 'Sinhala' },
+  { value: 'ta', badge: 'த', label: 'தமிழ்', sub: 'Tamil' },
+];
+
 const QuizSetup = () => {
   const [searchParams] = useSearchParams();
   const grade = Number(searchParams.get('grade')) || 9;
@@ -30,6 +36,7 @@ const QuizSetup = () => {
   const [lesson, setLesson] = useState(null);
   const [difficulty, setDifficulty] = useState(null);
   const [timeMode, setTimeMode] = useState(null);
+  const [language, setLanguage] = useState('en');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -42,7 +49,7 @@ const QuizSetup = () => {
     setLoading(true);
     try {
       const res = await quizAPI.start({ grade, lesson, difficulty, timeMode });
-      initSession(res.data, { grade, lesson, difficulty, timeMode });
+      initSession(res.data, { grade, lesson, difficulty, timeMode, language });
       navigate(`/student/quiz/play/${res.data.sessionId}`);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to start quiz. Please try again.');
@@ -118,7 +125,7 @@ const QuizSetup = () => {
       </div>
 
       {/* Time mode selector */}
-      <div className="card" style={{ marginBottom: '1.5rem', padding: '1.4rem' }}>
+      <div className="card" style={{ marginBottom: '1.2rem', padding: '1.4rem' }}>
         <h3 style={{ marginBottom: '1rem', fontWeight: 600 }}>Select Time Mode</h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.8rem' }}>
           {TIME_MODES.map(({ value, icon, label, sub }) => (
@@ -134,6 +141,42 @@ const QuizSetup = () => {
               <div style={{ fontSize: '2rem', marginBottom: '0.4rem' }}>{icon}</div>
               <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{label}</div>
               <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>{sub}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Language selector */}
+      <div className="card" style={{ marginBottom: '1.5rem', padding: '1.4rem' }}>
+        <h3 style={{ marginBottom: '0.4rem', fontWeight: 600 }}>Select Language</h3>
+        <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '1rem', marginTop: 0 }}>
+          Questions will be shown in your chosen language where available.
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.8rem' }}>
+          {LANGUAGES.map(({ value, badge, label, sub }) => (
+            <button
+              key={value}
+              onClick={() => setLanguage(value)}
+              style={{
+                ...selectionStyle(language === value),
+                padding: '1.1rem 0.8rem',
+                textAlign: 'center',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '1.4rem',
+                  fontWeight: 800,
+                  marginBottom: '0.35rem',
+                  color: language === value ? 'var(--primary)' : 'var(--text)',
+                }}
+              >
+                {badge}
+              </div>
+              <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{label}</div>
+              {sub !== label && (
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.15rem' }}>{sub}</div>
+              )}
             </button>
           ))}
         </div>
