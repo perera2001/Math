@@ -1,6 +1,6 @@
-const Anthropic = require('@anthropic-ai/sdk');
+const Anthropic = require("@anthropic-ai/sdk");
 
-const SUPPORTED_LANGUAGES = ['en', 'si', 'ta'];
+const SUPPORTED_LANGUAGES = ["en", "si", "ta"];
 
 const SYSTEM_PROMPT = `You are a Sri Lankan Grade 9 mathematics tutor.
 Given a multiple-choice math question, the student's chosen answer (or skipped), and the correct answer,
@@ -18,23 +18,25 @@ Rules:
 
 const pickModelId = () => {
   const configured = process.env.ANTHROPIC_MODEL;
-  return configured ? `${configured}-20251001` : 'claude-haiku-4-5-20251001';
+  return configured ? `${configured}-20251001` : "claude-haiku-4-5-20251001";
 };
 
 const explainAnswer = async ({
-  language = 'en',
+  language = "en",
   questionText,
   options,
   userAnswerIndex,
   correctAnswerIndex,
 }) => {
   if (!process.env.ANTHROPIC_API_KEY) {
-    const err = new Error('ANTHROPIC_API_KEY is not configured for quiz-service');
+    const err = new Error(
+      "ANTHROPIC_API_KEY is not configured for quiz-service",
+    );
     err.statusCode = 500;
     throw err;
   }
 
-  const lang = SUPPORTED_LANGUAGES.includes(language) ? language : 'en';
+  const lang = SUPPORTED_LANGUAGES.includes(language) ? language : "en";
   const client = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY,
     timeout: 30000,
@@ -42,9 +44,9 @@ const explainAnswer = async ({
 
   const userAnswer =
     userAnswerIndex === null || userAnswerIndex === undefined
-      ? 'Skipped'
-      : options[userAnswerIndex] || 'Unknown';
-  const correctAnswer = options[correctAnswerIndex] || 'Unknown';
+      ? "Skipped"
+      : options[userAnswerIndex] || "Unknown";
+  const correctAnswer = options[correctAnswerIndex] || "Unknown";
 
   const promptPayload = {
     language: lang,
@@ -63,7 +65,7 @@ const explainAnswer = async ({
       system: SYSTEM_PROMPT,
       messages: [
         {
-          role: 'user',
+          role: "user",
           content: JSON.stringify(promptPayload),
         },
       ],
@@ -71,14 +73,14 @@ const explainAnswer = async ({
 
     const text = response?.content?.[0]?.text?.trim();
     if (!text) {
-      const err = new Error('AI explanation failed');
+      const err = new Error("AI explanation failed");
       err.statusCode = 502;
       throw err;
     }
 
     return text;
   } catch (apiErr) {
-    const err = new Error('AI explanation failed');
+    const err = new Error("AI explanation failed");
     err.statusCode = apiErr.statusCode || 502;
     throw err;
   }

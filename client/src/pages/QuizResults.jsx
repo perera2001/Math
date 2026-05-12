@@ -1,15 +1,15 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { quizAPI } from '../api/quizApi';
+import React, { useEffect, useRef, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { quizAPI } from "../api/quizApi";
 
-const STAR_COLOR = '#FBBF24';
-const STAR_EMPTY = '#d1d5db';
-const LABELS = ['A', 'B', 'C', 'D'];
+const STAR_COLOR = "#FBBF24";
+const STAR_EMPTY = "#d1d5db";
+const LABELS = ["A", "B", "C", "D"];
 
-const resolveText = (val, lang = 'en') => {
-  if (!val) return '';
-  if (typeof val === 'string') return val;
-  return val[lang] || val.en || '';
+const resolveText = (val, lang = "en") => {
+  if (!val) return "";
+  if (typeof val === "string") return val;
+  return val[lang] || val.en || "";
 };
 
 // Render **bold** markers and newlines as React elements
@@ -17,30 +17,47 @@ const renderMarkdown = (text) => {
   if (!text) return null;
   return text.split(/\n/).flatMap((line, lineIdx, lines) => {
     const segments = line.split(/(\*\*[^*]+\*\*)/g).map((seg, segIdx) => {
-      if (seg.startsWith('**') && seg.endsWith('**')) {
+      if (seg.startsWith("**") && seg.endsWith("**")) {
         return <strong key={`${lineIdx}-${segIdx}`}>{seg.slice(2, -2)}</strong>;
       }
       return seg;
     });
-    return lineIdx < lines.length - 1 ? [...segments, <br key={`br-${lineIdx}`} />] : segments;
+    return lineIdx < lines.length - 1
+      ? [...segments, <br key={`br-${lineIdx}`} />]
+      : segments;
   });
 };
 
 /* Simple CSS confetti — 20 coloured spans positioned absolutely */
 const Confetti = () => {
-  const colours = ['#FBBF24', '#10B981', '#4361ee', '#EF4444', '#a78bfa', '#f472b6'];
+  const colours = [
+    "#FBBF24",
+    "#10B981",
+    "#4361ee",
+    "#EF4444",
+    "#a78bfa",
+    "#f472b6",
+  ];
   return (
-    <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 0 }}>
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        pointerEvents: "none",
+        overflow: "hidden",
+        zIndex: 0,
+      }}
+    >
       {Array.from({ length: 28 }).map((_, i) => (
         <span
           key={i}
           style={{
-            position: 'absolute',
+            position: "absolute",
             top: `${Math.random() * 40}%`,
             left: `${Math.random() * 100}%`,
             width: 10,
             height: 10,
-            borderRadius: Math.random() > 0.5 ? '50%' : '2px',
+            borderRadius: Math.random() > 0.5 ? "50%" : "2px",
             background: colours[i % colours.length],
             animation: `confettiFall ${1.5 + Math.random() * 2}s ease-in ${Math.random() * 0.8}s forwards`,
           }}
@@ -66,7 +83,7 @@ const QuizResults = () => {
   const [explanations, setExplanations] = useState({});
   const [explainLoading, setExplainLoading] = useState({});
   const [explainError, setExplainError] = useState({});
-  const [explanationLanguage, setExplanationLanguage] = useState('en');
+  const [explanationLanguage, setExplanationLanguage] = useState("en");
   const animRef = useRef(null);
 
   useEffect(() => {
@@ -79,7 +96,9 @@ const QuizResults = () => {
         // Fallback: older backend versions may only support history summary.
         try {
           const historyRes = await quizAPI.getHistory();
-          const session = historyRes.data.sessions.find((s) => s._id === sessionId);
+          const session = historyRes.data.sessions.find(
+            (s) => s._id === sessionId,
+          );
           if (session) {
             setResult(session);
             setGrade(session.grade);
@@ -107,7 +126,7 @@ const QuizResults = () => {
   }, [result]);
 
   const fmt = (secs) => {
-    if (!secs && secs !== 0) return '—';
+    if (!secs && secs !== 0) return "—";
     const m = Math.floor(secs / 60);
     const s = secs % 60;
     return m > 0 ? `${m}m ${s}s` : `${s}s`;
@@ -117,29 +136,35 @@ const QuizResults = () => {
 
   if (!result) {
     return (
-      <div className="page-container" style={{ textAlign: 'center' }}>
-        <p style={{ color: 'var(--text-muted)' }}>Results not found.</p>
-        <button className="btn btn-primary" style={{ marginTop: '1rem', width: 'auto' }} onClick={() => navigate('/student/dashboard')}>
+      <div className="page-container" style={{ textAlign: "center" }}>
+        <p style={{ color: "var(--text-muted)" }}>Results not found.</p>
+        <button
+          className="btn btn-primary"
+          style={{ marginTop: "1rem", width: "auto" }}
+          onClick={() => navigate("/student/dashboard")}
+        >
           Back to Dashboard
         </button>
       </div>
     );
   }
 
-  const correctCount = result.correctCount ?? '—';
+  const correctCount = result.correctCount ?? "—";
 
   const lifelinesCount = result.lifelinesUsed
     ? Object.values(result.lifelinesUsed).filter(Boolean).length
     : 0;
 
   const showConfetti = result.starsEarned >= 3;
-  const language = result.language || 'en';
+  const language = result.language || "en";
 
-  const perQuestion = Array.isArray(result.perQuestion) ? result.perQuestion : [];
+  const perQuestion = Array.isArray(result.perQuestion)
+    ? result.perQuestion
+    : [];
 
   const fetchExplanation = async (questionIndex) => {
     setExplainLoading((prev) => ({ ...prev, [questionIndex]: true }));
-    setExplainError((prev) => ({ ...prev, [questionIndex]: '' }));
+    setExplainError((prev) => ({ ...prev, [questionIndex]: "" }));
 
     try {
       const res = await quizAPI.explainAnswer({
@@ -155,7 +180,8 @@ const QuizResults = () => {
     } catch (err) {
       setExplainError((prev) => ({
         ...prev,
-        [questionIndex]: err.response?.data?.message || 'Failed to generate explanation.',
+        [questionIndex]:
+          err.response?.data?.message || "Failed to generate explanation.",
       }));
     } finally {
       setExplainLoading((prev) => ({ ...prev, [questionIndex]: false }));
@@ -163,20 +189,36 @@ const QuizResults = () => {
   };
 
   return (
-    <div style={{ maxWidth: 980, margin: '0 auto', padding: '1.5rem', position: 'relative' }}>
+    <div
+      style={{
+        maxWidth: 980,
+        margin: "0 auto",
+        padding: "1.5rem",
+        position: "relative",
+      }}
+    >
       {showConfetti && <Confetti />}
 
-      <div className="card" style={{ textAlign: 'center', padding: '2.5rem 2rem', position: 'relative', zIndex: 1 }}>
+      <div
+        className="card"
+        style={{
+          textAlign: "center",
+          padding: "2.5rem 2rem",
+          position: "relative",
+          zIndex: 1,
+        }}
+      >
         {/* Stars */}
-        <div style={{ marginBottom: '1rem' }}>
+        <div style={{ marginBottom: "1rem" }}>
           {Array.from({ length: 4 }, (_, i) => (
             <span
               key={i}
               style={{
-                fontSize: '2.8rem',
+                fontSize: "2.8rem",
                 color: i < visibleStars ? STAR_COLOR : STAR_EMPTY,
-                transition: 'color 0.3s',
-                filter: i < visibleStars ? 'drop-shadow(0 0 6px #fbbf24aa)' : 'none',
+                transition: "color 0.3s",
+                filter:
+                  i < visibleStars ? "drop-shadow(0 0 6px #fbbf24aa)" : "none",
               }}
             >
               ★
@@ -187,52 +229,64 @@ const QuizResults = () => {
         {/* Score */}
         <div
           style={{
-            fontSize: '3.5rem',
+            fontSize: "3.5rem",
             fontWeight: 900,
-            color: 'var(--primary)',
+            color: "var(--primary)",
             lineHeight: 1,
-            marginBottom: '0.4rem',
+            marginBottom: "0.4rem",
           }}
         >
           {result.totalScore ?? 0}
         </div>
-        <div style={{ color: 'var(--text-muted)', marginBottom: '1.8rem' }}>points</div>
+        <div style={{ color: "var(--text-muted)", marginBottom: "1.8rem" }}>
+          points
+        </div>
 
         {/* Stats grid */}
         <div
           style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
-            gap: '0.8rem',
-            marginBottom: '2rem',
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: "0.8rem",
+            marginBottom: "2rem",
           }}
         >
           {[
-            { label: 'Correct', value: `${correctCount}/8`, icon: '✅' },
-            { label: 'Time Used', value: fmt(result.timeSpentTotal), icon: '⏱' },
-            { label: 'Max Streak', value: result.maxStreak ?? 0, icon: '🔥' },
-            { label: 'Lifelines', value: lifelinesCount, icon: '🛟' },
+            { label: "Correct", value: `${correctCount}/8`, icon: "✅" },
+            {
+              label: "Time Used",
+              value: fmt(result.timeSpentTotal),
+              icon: "⏱",
+            },
+            { label: "Max Streak", value: result.maxStreak ?? 0, icon: "🔥" },
+            { label: "Lifelines", value: lifelinesCount, icon: "🛟" },
           ].map((s) => (
             <div
               key={s.label}
               style={{
-                background: 'var(--bg)',
-                borderRadius: '10px',
-                padding: '0.8rem 0.5rem',
+                background: "var(--bg)",
+                borderRadius: "10px",
+                padding: "0.8rem 0.5rem",
               }}
             >
-              <div style={{ fontSize: '1.4rem' }}>{s.icon}</div>
-              <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>{s.value}</div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{s.label}</div>
+              <div style={{ fontSize: "1.4rem" }}>{s.icon}</div>
+              <div style={{ fontWeight: 700, fontSize: "1.1rem" }}>
+                {s.value}
+              </div>
+              <div style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>
+                {s.label}
+              </div>
             </div>
           ))}
         </div>
 
         {/* Buttons */}
-        <div style={{ display: 'flex', gap: '0.8rem', justifyContent: 'center' }}>
+        <div
+          style={{ display: "flex", gap: "0.8rem", justifyContent: "center" }}
+        >
           <button
             className="btn btn-primary"
-            style={{ width: 'auto', padding: '0.7rem 1.6rem' }}
+            style={{ width: "auto", padding: "0.7rem 1.6rem" }}
             onClick={() => navigate(`/student/quiz/setup?grade=${grade || 9}`)}
           >
             🔄 Play Again
@@ -240,45 +294,79 @@ const QuizResults = () => {
           <button
             className="btn"
             style={{
-              width: 'auto',
-              padding: '0.7rem 1.6rem',
-              background: 'var(--bg)',
-              color: 'var(--text)',
-              border: '2px solid var(--border)',
+              width: "auto",
+              padding: "0.7rem 1.6rem",
+              background: "var(--bg)",
+              color: "var(--text)",
+              border: "2px solid var(--border)",
             }}
-            onClick={() => navigate('/student/dashboard')}
+            onClick={() => navigate("/student/dashboard")}
           >
             🏠 Dashboard
           </button>
         </div>
       </div>
 
-      <div className="card" style={{ marginTop: '1.2rem', padding: '1.2rem 1.1rem' }}>
-        <div style={{ marginBottom: '1rem' }}>
-          <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800 }}>Answer Review</h3>
-          <p style={{ margin: '0.35rem 0 0', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-            Review all 8 questions, your selected answer, and the correct answer.
+      <div
+        className="card"
+        style={{ marginTop: "1.2rem", padding: "1.2rem 1.1rem" }}
+      >
+        <div style={{ marginBottom: "1rem" }}>
+          <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800 }}>
+            Answer Review
+          </h3>
+          <p
+            style={{
+              margin: "0.35rem 0 0",
+              color: "var(--text-muted)",
+              fontSize: "0.9rem",
+            }}
+          >
+            Review all 8 questions, your selected answer, and the correct
+            answer.
           </p>
 
           {/* Explanation Language Selector */}
-          <div style={{ marginTop: '1rem', display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)' }}>Explanation Language:</span>
-            {['en', 'si', 'ta'].map((lang) => {
-              const labels = { en: 'English', si: 'සිංහල', ta: 'தமிழ்' };
+          <div
+            style={{
+              marginTop: "1rem",
+              display: "flex",
+              gap: "0.6rem",
+              alignItems: "center",
+            }}
+          >
+            <span
+              style={{
+                fontSize: "0.85rem",
+                fontWeight: 700,
+                color: "var(--text-muted)",
+              }}
+            >
+              Explanation Language:
+            </span>
+            {["en", "si", "ta"].map((lang) => {
+              const labels = { en: "English", si: "සිංහල", ta: "தமிழ்" };
               return (
                 <button
                   key={lang}
                   onClick={() => setExplanationLanguage(lang)}
                   style={{
-                    padding: '0.45rem 0.85rem',
-                    borderRadius: '6px',
-                    border: explanationLanguage === lang ? '2px solid var(--primary)' : '1px solid var(--border)',
-                    background: explanationLanguage === lang ? 'var(--primary)' : 'var(--bg)',
-                    color: explanationLanguage === lang ? '#fff' : 'var(--text)',
+                    padding: "0.45rem 0.85rem",
+                    borderRadius: "6px",
+                    border:
+                      explanationLanguage === lang
+                        ? "2px solid var(--primary)"
+                        : "1px solid var(--border)",
+                    background:
+                      explanationLanguage === lang
+                        ? "var(--primary)"
+                        : "var(--bg)",
+                    color:
+                      explanationLanguage === lang ? "#fff" : "var(--text)",
                     fontWeight: explanationLanguage === lang ? 700 : 500,
-                    fontSize: '0.8rem',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
+                    fontSize: "0.8rem",
+                    cursor: "pointer",
+                    transition: "all 0.2s",
                   }}
                 >
                   {labels[lang]}
@@ -289,18 +377,20 @@ const QuizResults = () => {
         </div>
 
         {perQuestion.length === 0 ? (
-          <div style={{ color: 'var(--text-muted)', padding: '0.5rem 0' }}>
+          <div style={{ color: "var(--text-muted)", padding: "0.5rem 0" }}>
             Detailed question review is not available for this session.
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "0.9rem" }}
+          >
             {perQuestion.map((q) => {
               const questionText = resolveText(q.questionText, language);
               const selectedIdx = q.userAnswerIndex;
               const correctIdx = q.correctAnswerIndex;
               const selectedText =
                 selectedIdx === null || selectedIdx === undefined
-                  ? 'Not answered'
+                  ? "Not answered"
                   : resolveText(q.options[selectedIdx], language);
               const correctText = resolveText(q.options[correctIdx], language);
 
@@ -308,47 +398,60 @@ const QuizResults = () => {
                 <div
                   key={q.questionIndex}
                   style={{
-                    border: `1px solid ${q.isCorrect ? '#bbf7d0' : '#fecaca'}`,
-                    borderLeft: `4px solid ${q.isCorrect ? '#10B981' : '#EF4444'}`,
-                    borderRadius: '12px',
-                    padding: '0.95rem',
-                    background: q.isCorrect ? '#f0fdf4' : '#fef2f2',
+                    border: `1px solid ${q.isCorrect ? "#bbf7d0" : "#fecaca"}`,
+                    borderLeft: `4px solid ${q.isCorrect ? "#10B981" : "#EF4444"}`,
+                    borderRadius: "12px",
+                    padding: "0.95rem",
+                    background: q.isCorrect ? "#f0fdf4" : "#fef2f2",
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.8rem', marginBottom: '0.7rem' }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      gap: "0.8rem",
+                      marginBottom: "0.7rem",
+                    }}
+                  >
                     <div style={{ fontWeight: 700, lineHeight: 1.45 }}>
                       Q{q.questionIndex + 1}. {questionText}
                     </div>
                     <div
                       style={{
                         flexShrink: 0,
-                        alignSelf: 'flex-start',
-                        padding: '0.2rem 0.5rem',
-                        borderRadius: '999px',
-                        fontSize: '0.75rem',
+                        alignSelf: "flex-start",
+                        padding: "0.2rem 0.5rem",
+                        borderRadius: "999px",
+                        fontSize: "0.75rem",
                         fontWeight: 700,
-                        background: q.isCorrect ? '#dcfce7' : '#fee2e2',
-                        color: q.isCorrect ? '#166534' : '#991b1b',
+                        background: q.isCorrect ? "#dcfce7" : "#fee2e2",
+                        color: q.isCorrect ? "#166534" : "#991b1b",
                       }}
                     >
-                      {q.isCorrect ? 'Correct' : 'Wrong'}
+                      {q.isCorrect ? "Correct" : "Wrong"}
                     </div>
                   </div>
 
-                  <div style={{ display: 'grid', gap: '0.45rem', marginBottom: '0.7rem' }}>
+                  <div
+                    style={{
+                      display: "grid",
+                      gap: "0.45rem",
+                      marginBottom: "0.7rem",
+                    }}
+                  >
                     {(q.options || []).map((opt, idx) => {
                       const text = resolveText(opt, language);
                       const isSelected = idx === selectedIdx;
                       const isCorrect = idx === correctIdx;
 
-                      let borderColor = 'var(--border)';
-                      let background = '#fff';
+                      let borderColor = "var(--border)";
+                      let background = "#fff";
                       if (isCorrect) {
-                        borderColor = '#10B981';
-                        background = '#ecfdf5';
+                        borderColor = "#10B981";
+                        background = "#ecfdf5";
                       } else if (isSelected && !q.isCorrect) {
-                        borderColor = '#EF4444';
-                        background = '#fee2e2';
+                        borderColor = "#EF4444";
+                        background = "#fee2e2";
                       }
 
                       return (
@@ -357,50 +460,80 @@ const QuizResults = () => {
                           style={{
                             border: `1px solid ${borderColor}`,
                             background,
-                            borderRadius: '10px',
-                            padding: '0.55rem 0.65rem',
-                            fontSize: '0.9rem',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            gap: '0.7rem',
+                            borderRadius: "10px",
+                            padding: "0.55rem 0.65rem",
+                            fontSize: "0.9rem",
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            gap: "0.7rem",
                           }}
                         >
                           <span>
-                            <strong style={{ marginRight: '0.3rem' }}>{LABELS[idx]}.</strong>
+                            <strong style={{ marginRight: "0.3rem" }}>
+                              {LABELS[idx]}.
+                            </strong>
                             {text}
                           </span>
-                          <span style={{ fontSize: '0.76rem', fontWeight: 700 }}>
-                            {isCorrect ? 'Correct' : isSelected ? 'Your Answer' : ''}
+                          <span
+                            style={{ fontSize: "0.76rem", fontWeight: 700 }}
+                          >
+                            {isCorrect
+                              ? "Correct"
+                              : isSelected
+                                ? "Your Answer"
+                                : ""}
                           </span>
                         </div>
                       );
                     })}
                   </div>
 
-                  <div style={{ fontSize: '0.84rem', color: 'var(--text-muted)', marginBottom: '0.65rem' }}>
-                    Your answer: <strong style={{ color: 'var(--text)' }}>{selectedText}</strong>
+                  <div
+                    style={{
+                      fontSize: "0.84rem",
+                      color: "var(--text-muted)",
+                      marginBottom: "0.65rem",
+                    }}
+                  >
+                    Your answer:{" "}
+                    <strong style={{ color: "var(--text)" }}>
+                      {selectedText}
+                    </strong>
                     {!q.isCorrect && (
                       <>
-                        {' '}
-                        | Correct answer: <strong style={{ color: '#166534' }}>{correctText}</strong>
+                        {" "}
+                        | Correct answer:{" "}
+                        <strong style={{ color: "#166534" }}>
+                          {correctText}
+                        </strong>
                       </>
                     )}
                   </div>
 
                   <button
                     className="btn btn-primary"
-                    style={{ width: 'auto', padding: '0.55rem 0.95rem', fontSize: '0.85rem' }}
+                    style={{
+                      width: "auto",
+                      padding: "0.55rem 0.95rem",
+                      fontSize: "0.85rem",
+                    }}
                     onClick={() => fetchExplanation(q.questionIndex)}
                     disabled={!!explainLoading[q.questionIndex]}
                   >
                     {explainLoading[q.questionIndex]
-                      ? 'Generating explanation...'
-                      : 'Explain the Answer by Using AI'}
+                      ? "Generating explanation..."
+                      : "Explain the Answer by Using AI"}
                   </button>
 
                   {explainError[q.questionIndex] && (
-                    <div style={{ marginTop: '0.55rem', color: '#b91c1c', fontSize: '0.85rem' }}>
+                    <div
+                      style={{
+                        marginTop: "0.55rem",
+                        color: "#b91c1c",
+                        fontSize: "0.85rem",
+                      }}
+                    >
                       {explainError[q.questionIndex]}
                     </div>
                   )}
@@ -408,12 +541,12 @@ const QuizResults = () => {
                   {explanations[q.questionIndex] && (
                     <div
                       style={{
-                        marginTop: '0.55rem',
-                        borderRadius: '10px',
-                        border: '1px solid #bfdbfe',
-                        background: '#eff6ff',
-                        padding: '0.7rem 0.8rem',
-                        fontSize: '0.9rem',
+                        marginTop: "0.55rem",
+                        borderRadius: "10px",
+                        border: "1px solid #bfdbfe",
+                        background: "#eff6ff",
+                        padding: "0.7rem 0.8rem",
+                        fontSize: "0.9rem",
                         lineHeight: 1.55,
                       }}
                     >

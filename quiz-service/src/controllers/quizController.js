@@ -1,11 +1,15 @@
-const quizService = require('../services/quizService');
+const quizService = require("../services/quizService");
 
 const start = async (req, res, next) => {
   try {
     const { grade, lesson, difficulty, timeMode, language } = req.body;
 
     if (!grade || !lesson || !difficulty || !timeMode) {
-      return res.status(400).json({ message: 'grade, lesson, difficulty, and timeMode are required' });
+      return res
+        .status(400)
+        .json({
+          message: "grade, lesson, difficulty, and timeMode are required",
+        });
     }
 
     const result = await quizService.startQuiz({
@@ -27,8 +31,16 @@ const answer = async (req, res, next) => {
   try {
     const { sessionId, questionIndex, answerIndex, timeSpent } = req.body;
 
-    if (sessionId === undefined || questionIndex === undefined || answerIndex === undefined) {
-      return res.status(400).json({ message: 'sessionId, questionIndex, and answerIndex are required' });
+    if (
+      sessionId === undefined ||
+      questionIndex === undefined ||
+      answerIndex === undefined
+    ) {
+      return res
+        .status(400)
+        .json({
+          message: "sessionId, questionIndex, and answerIndex are required",
+        });
     }
 
     const result = await quizService.answerQuestion({
@@ -48,13 +60,17 @@ const answer = async (req, res, next) => {
 const lifeline = async (req, res, next) => {
   try {
     const { sessionId, type } = req.body;
-    const allowed = ['fiftyFifty', 'skip', 'extraTime'];
+    const allowed = ["fiftyFifty", "skip", "extraTime"];
 
     if (!sessionId || !type) {
-      return res.status(400).json({ message: 'sessionId and type are required' });
+      return res
+        .status(400)
+        .json({ message: "sessionId and type are required" });
     }
     if (!allowed.includes(type)) {
-      return res.status(400).json({ message: `type must be one of: ${allowed.join(', ')}` });
+      return res
+        .status(400)
+        .json({ message: `type must be one of: ${allowed.join(", ")}` });
     }
 
     const result = await quizService.useLifeline({
@@ -74,7 +90,7 @@ const complete = async (req, res, next) => {
     const { sessionId, timeSpentTotal } = req.body;
 
     if (!sessionId) {
-      return res.status(400).json({ message: 'sessionId is required' });
+      return res.status(400).json({ message: "sessionId is required" });
     }
 
     const result = await quizService.completeQuiz({
@@ -111,7 +127,7 @@ const result = async (req, res, next) => {
   try {
     const { sessionId } = req.params;
     if (!sessionId) {
-      return res.status(400).json({ message: 'sessionId is required' });
+      return res.status(400).json({ message: "sessionId is required" });
     }
 
     const quizResult = await quizService.getResultBySession({
@@ -130,7 +146,9 @@ const explainAnswer = async (req, res, next) => {
     const { sessionId, questionIndex, language } = req.body;
 
     if (!sessionId || questionIndex === undefined) {
-      return res.status(400).json({ message: 'sessionId and questionIndex are required' });
+      return res
+        .status(400)
+        .json({ message: "sessionId and questionIndex are required" });
     }
 
     const explanationResult = await quizService.explainQuestionAnswer({
@@ -146,4 +164,13 @@ const explainAnswer = async (req, res, next) => {
   }
 };
 
-module.exports = { start, answer, lifeline, complete, history, stats, result, explainAnswer };
+module.exports = {
+  start,
+  answer,
+  lifeline,
+  complete,
+  history,
+  stats,
+  result,
+  explainAnswer,
+};

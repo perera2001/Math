@@ -73,7 +73,10 @@ async function main() {
       let questionPreview = "";
       if (typeof sample.questionText === "string") {
         questionPreview = sample.questionText.slice(0, 80);
-      } else if (sample.questionText && typeof sample.questionText === "object") {
+      } else if (
+        sample.questionText &&
+        typeof sample.questionText === "object"
+      ) {
         // Support multilingual/object-based question text shapes.
         questionPreview = JSON.stringify(sample.questionText).slice(0, 80);
       } else {
@@ -86,9 +89,7 @@ async function main() {
       console.log(
         `  sample lesson/difficulty/grade: ${sample.lesson} / ${sample.difficulty} / ${sample.grade}`,
       );
-      console.log(
-        `  sample questionText: ${questionPreview}`,
-      );
+      console.log(`  sample questionText: ${questionPreview}`);
     }
 
     // Distribution
