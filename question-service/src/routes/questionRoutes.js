@@ -7,6 +7,7 @@ const {
   update,
   remove,
   getStats,
+  translate,
 } = require('../controllers/questionController');
 
 const router = express.Router();
@@ -14,6 +15,7 @@ const router = express.Router();
 router.use(verifyUser);
 router.use(requireCoordinator);
 
+router.post('/translate', translate);
 router.post('/', create);
 router.get('/', getAll);
 router.get('/stats', getStats);
