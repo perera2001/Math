@@ -59,7 +59,7 @@ const QuizSetup = () => {
 
   const handleStart = async () => {
     if (!lesson || !difficulty || !timeMode) {
-      setError(t('setup_error'));
+      setError(t("setup_error"));
       return;
     }
     setError("");
@@ -96,8 +96,10 @@ const QuizSetup = () => {
   return (
     <div className="page-container" style={{ maxWidth: 680, margin: "0 auto" }}>
       <div className="page-header">
-        <h1 className="page-title">Grade {grade} — {t('setup_title')}</h1>
-        <p className="page-subtitle">{t('setup_subtitle')}</p>
+        <h1 className="page-title">
+          Grade {grade} — {t("setup_title")}
+        </h1>
+        <p className="page-subtitle">{t("setup_subtitle")}</p>
       </div>
 
       {/* Lesson selector */}
@@ -105,7 +107,9 @@ const QuizSetup = () => {
         className="card"
         style={{ marginBottom: "1.2rem", padding: "1.4rem" }}
       >
-        <h3 style={{ marginBottom: "1rem", fontWeight: 600 }}>{t('setup_lesson')}</h3>
+        <h3 style={{ marginBottom: "1rem", fontWeight: 600 }}>
+          {t("setup_lesson")}
+        </h3>
         <div
           style={{
             display: "grid",
@@ -140,7 +144,7 @@ const QuizSetup = () => {
         style={{ marginBottom: "1.2rem", padding: "1.4rem" }}
       >
         <h3 style={{ marginBottom: "1rem", fontWeight: 600 }}>
-          {t('setup_difficulty')}
+          {t("setup_difficulty")}
         </h3>
         <div style={{ display: "flex", gap: "0.8rem" }}>
           {DIFFICULTIES.map(({ value, color, key }) => (
@@ -175,7 +179,7 @@ const QuizSetup = () => {
         style={{ marginBottom: "1.2rem", padding: "1.4rem" }}
       >
         <h3 style={{ marginBottom: "1rem", fontWeight: 600 }}>
-          {t('setup_time')}
+          {t("setup_time")}
         </h3>
         <div
           style={{
@@ -220,7 +224,7 @@ const QuizSetup = () => {
         style={{ marginBottom: "1.5rem", padding: "1.4rem" }}
       >
         <h3 style={{ marginBottom: "0.4rem", fontWeight: 600 }}>
-          {t('setup_language')}
+          {t("setup_language")}
         </h3>
         <p
           style={{
@@ -230,7 +234,7 @@ const QuizSetup = () => {
             marginTop: 0,
           }}
         >
-          {t('setup_language_hint')}
+          {t("setup_language_hint")}
         </p>
         <div
           style={{
@@ -299,7 +303,7 @@ const QuizSetup = () => {
         disabled={loading || !lesson || !difficulty || !timeMode}
         style={{ fontSize: "1rem", padding: "0.85rem" }}
       >
-        {loading ? t('setup_loading') : t('setup_start')}
+        {loading ? t("setup_loading") : t("setup_start")}
       </button>
     </div>
   );

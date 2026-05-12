@@ -134,18 +134,19 @@ const QuizResults = () => {
     return m > 0 ? `${m}m ${s}s` : `${s}s`;
   };
 
-  if (loading) return <div className="page-loading">{t('results_loading')}</div>;
+  if (loading)
+    return <div className="page-loading">{t("results_loading")}</div>;
 
   if (!result) {
     return (
       <div className="page-container" style={{ textAlign: "center" }}>
-        <p style={{ color: "var(--text-muted)" }}>{t('results_not_found')}</p>
+        <p style={{ color: "var(--text-muted)" }}>{t("results_not_found")}</p>
         <button
           className="btn btn-primary"
           style={{ marginTop: "1rem", width: "auto" }}
           onClick={() => navigate("/student/dashboard")}
         >
-          {t('results_back_dashboard')}
+          {t("results_back_dashboard")}
         </button>
       </div>
     );
@@ -241,7 +242,7 @@ const QuizResults = () => {
           {result.totalScore ?? 0}
         </div>
         <div style={{ color: "var(--text-muted)", marginBottom: "1.8rem" }}>
-          {t('results_points')}
+          {t("results_points")}
         </div>
 
         {/* Stats grid */}
@@ -254,14 +255,26 @@ const QuizResults = () => {
           }}
         >
           {[
-            { label: t('results_correct_stat'), value: `${correctCount}/8`, icon: "✅" },
             {
-              label: t('results_time_stat'),
+              label: t("results_correct_stat"),
+              value: `${correctCount}/8`,
+              icon: "✅",
+            },
+            {
+              label: t("results_time_stat"),
               value: fmt(result.timeSpentTotal),
               icon: "⏱",
             },
-            { label: t('results_streak_stat'), value: result.maxStreak ?? 0, icon: "🔥" },
-            { label: t('results_lifelines_stat'), value: lifelinesCount, icon: "🛠" },
+            {
+              label: t("results_streak_stat"),
+              value: result.maxStreak ?? 0,
+              icon: "🔥",
+            },
+            {
+              label: t("results_lifelines_stat"),
+              value: lifelinesCount,
+              icon: "🛠",
+            },
           ].map((s) => (
             <div
               key={s.label}
@@ -291,7 +304,7 @@ const QuizResults = () => {
             style={{ width: "auto", padding: "0.7rem 1.6rem" }}
             onClick={() => navigate(`/student/quiz/setup?grade=${grade || 9}`)}
           >
-            {t('results_play_again')}
+            {t("results_play_again")}
           </button>
           <button
             className="btn"
@@ -304,7 +317,7 @@ const QuizResults = () => {
             }}
             onClick={() => navigate("/student/dashboard")}
           >
-            {t('results_dashboard')}
+            {t("results_dashboard")}
           </button>
         </div>
       </div>
@@ -315,7 +328,7 @@ const QuizResults = () => {
       >
         <div style={{ marginBottom: "1rem" }}>
           <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800 }}>
-            {t('results_answer_review')}
+            {t("results_answer_review")}
           </h3>
           <p
             style={{
@@ -324,7 +337,7 @@ const QuizResults = () => {
               fontSize: "0.9rem",
             }}
           >
-            {t('results_review_sub')}
+            {t("results_review_sub")}
           </p>
 
           {/* Explanation Language Selector */}
@@ -343,7 +356,7 @@ const QuizResults = () => {
                 color: "var(--text-muted)",
               }}
             >
-              {t('results_explain_lang')}
+              {t("results_explain_lang")}
             </span>
             {["en", "si", "ta"].map((lang) => {
               const labels = { en: "English", si: "සිංහල", ta: "தமிழ்" };
@@ -379,7 +392,7 @@ const QuizResults = () => {
 
         {perQuestion.length === 0 ? (
           <div style={{ color: "var(--text-muted)", padding: "0.5rem 0" }}>
-            {t('results_no_review')}
+            {t("results_no_review")}
           </div>
         ) : (
           <div
@@ -391,7 +404,7 @@ const QuizResults = () => {
               const correctIdx = q.correctAnswerIndex;
               const selectedText =
                 selectedIdx === null || selectedIdx === undefined
-                  ? t('results_not_answered')
+                  ? t("results_not_answered")
                   : resolveText(q.options[selectedIdx], language);
               const correctText = resolveText(q.options[correctIdx], language);
 
@@ -429,7 +442,9 @@ const QuizResults = () => {
                         color: q.isCorrect ? "#166534" : "#991b1b",
                       }}
                     >
-                      {q.isCorrect ? t('results_correct_badge') : t('results_wrong_badge')}
+                      {q.isCorrect
+                        ? t("results_correct_badge")
+                        : t("results_wrong_badge")}
                     </div>
                   </div>
 
@@ -480,9 +495,9 @@ const QuizResults = () => {
                             style={{ fontSize: "0.76rem", fontWeight: 700 }}
                           >
                             {isCorrect
-                              ? t('results_correct_label')
+                              ? t("results_correct_label")
                               : isSelected
-                                ? t('results_your_answer_label')
+                                ? t("results_your_answer_label")
                                 : ""}
                           </span>
                         </div>
@@ -497,14 +512,14 @@ const QuizResults = () => {
                       marginBottom: "0.65rem",
                     }}
                   >
-                    {t('results_your_answer')}:{" "}
+                    {t("results_your_answer")}:{" "}
                     <strong style={{ color: "var(--text)" }}>
                       {selectedText}
                     </strong>
                     {!q.isCorrect && (
                       <>
                         {" "}
-                        | {t('results_correct_answer')}:{" "}
+                        | {t("results_correct_answer")}:{" "}
                         <strong style={{ color: "#166534" }}>
                           {correctText}
                         </strong>
@@ -523,8 +538,8 @@ const QuizResults = () => {
                     disabled={!!explainLoading[q.questionIndex]}
                   >
                     {explainLoading[q.questionIndex]
-                      ? t('results_explain_loading')
-                      : t('results_explain_btn')}
+                      ? t("results_explain_loading")
+                      : t("results_explain_btn")}
                   </button>
 
                   {explainError[q.questionIndex] && (

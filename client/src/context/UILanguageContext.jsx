@@ -1,15 +1,15 @@
-import React, { createContext, useContext, useState } from 'react';
-import translations from '../constants/uiTranslations';
+import React, { createContext, useContext, useState } from "react";
+import translations from "../constants/uiTranslations";
 
 const UILanguageContext = createContext(null);
 
 export const UILanguageProvider = ({ children }) => {
   const [uiLang, setUiLang] = useState(
-    () => localStorage.getItem('uiLang') || 'en'
+    () => localStorage.getItem("uiLang") || "en",
   );
 
   const switchLang = (lang) => {
-    localStorage.setItem('uiLang', lang);
+    localStorage.setItem("uiLang", lang);
     setUiLang(lang);
   };
 
@@ -18,7 +18,7 @@ export const UILanguageProvider = ({ children }) => {
     if (!vars) return str;
     return Object.entries(vars).reduce(
       (acc, [k, v]) => acc.replace(`{${k}}`, v),
-      str
+      str,
     );
   };
 
