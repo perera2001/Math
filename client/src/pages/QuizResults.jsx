@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { quizAPI } from "../api/quizApi";
+import { useUILang } from "../context/UILanguageContext";
 
 const STAR_COLOR = "#FBBF24";
 const STAR_EMPTY = "#d1d5db";
@@ -76,6 +77,7 @@ const Confetti = () => {
 const QuizResults = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
+  const { t } = useUILang();
   const [result, setResult] = useState(null);
   const [visibleStars, setVisibleStars] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -132,18 +134,18 @@ const QuizResults = () => {
     return m > 0 ? `${m}m ${s}s` : `${s}s`;
   };
 
-  if (loading) return <div className="page-loading">Loading results…</div>;
+  if (loading) return <div className="page-loading">{t('results_loading')}</div>;
 
   if (!result) {
     return (
       <div className="page-container" style={{ textAlign: "center" }}>
-        <p style={{ color: "var(--text-muted)" }}>Results not found.</p>
+        <p style={{ color: "var(--text-muted)" }}>{t('results_not_found')}</p>
         <button
           className="btn btn-primary"
           style={{ marginTop: "1rem", width: "auto" }}
           onClick={() => navigate("/student/dashboard")}
         >
-          Back to Dashboard
+          {t('results_back_dashboard')}
         </button>
       </div>
     );
@@ -239,7 +241,7 @@ const QuizResults = () => {
           {result.totalScore ?? 0}
         </div>
         <div style={{ color: "var(--text-muted)", marginBottom: "1.8rem" }}>
-          points
+          {t('results_points')}
         </div>
 
         {/* Stats grid */}
@@ -252,14 +254,14 @@ const QuizResults = () => {
           }}
         >
           {[
-            { label: "Correct", value: `${correctCount}/8`, icon: "✅" },
+            { label: t('results_correct_stat'), value: `${correctCount}/8`, icon: "✅" },
             {
-              label: "Time Used",
+              label: t('results_time_stat'),
               value: fmt(result.timeSpentTotal),
               icon: "⏱",
             },
-            { label: "Max Streak", value: result.maxStreak ?? 0, icon: "🔥" },
-            { label: "Lifelines", value: lifelinesCount, icon: "🛟" },
+            { label: t('results_streak_stat'), value: result.maxStreak ?? 0, icon: "🔥" },
+            { label: t('results_lifelines_stat'), value: lifelinesCount, icon: "🛠" },
           ].map((s) => (
             <div
               key={s.label}
@@ -289,7 +291,7 @@ const QuizResults = () => {
             style={{ width: "auto", padding: "0.7rem 1.6rem" }}
             onClick={() => navigate(`/student/quiz/setup?grade=${grade || 9}`)}
           >
-            🔄 Play Again
+            {t('results_play_again')}
           </button>
           <button
             className="btn"
@@ -302,7 +304,7 @@ const QuizResults = () => {
             }}
             onClick={() => navigate("/student/dashboard")}
           >
-            🏠 Dashboard
+            {t('results_dashboard')}
           </button>
         </div>
       </div>
@@ -313,7 +315,7 @@ const QuizResults = () => {
       >
         <div style={{ marginBottom: "1rem" }}>
           <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800 }}>
-            Answer Review
+            {t('results_answer_review')}
           </h3>
           <p
             style={{
@@ -322,8 +324,7 @@ const QuizResults = () => {
               fontSize: "0.9rem",
             }}
           >
-            Review all 8 questions, your selected answer, and the correct
-            answer.
+            {t('results_review_sub')}
           </p>
 
           {/* Explanation Language Selector */}
@@ -342,7 +343,7 @@ const QuizResults = () => {
                 color: "var(--text-muted)",
               }}
             >
-              Explanation Language:
+              {t('results_explain_lang')}
             </span>
             {["en", "si", "ta"].map((lang) => {
               const labels = { en: "English", si: "සිංහල", ta: "தமிழ்" };
@@ -378,7 +379,7 @@ const QuizResults = () => {
 
         {perQuestion.length === 0 ? (
           <div style={{ color: "var(--text-muted)", padding: "0.5rem 0" }}>
-            Detailed question review is not available for this session.
+            {t('results_no_review')}
           </div>
         ) : (
           <div
@@ -390,7 +391,7 @@ const QuizResults = () => {
               const correctIdx = q.correctAnswerIndex;
               const selectedText =
                 selectedIdx === null || selectedIdx === undefined
-                  ? "Not answered"
+                  ? t('results_not_answered')
                   : resolveText(q.options[selectedIdx], language);
               const correctText = resolveText(q.options[correctIdx], language);
 
@@ -428,7 +429,7 @@ const QuizResults = () => {
                         color: q.isCorrect ? "#166534" : "#991b1b",
                       }}
                     >
-                      {q.isCorrect ? "Correct" : "Wrong"}
+                      {q.isCorrect ? t('results_correct_badge') : t('results_wrong_badge')}
                     </div>
                   </div>
 
@@ -479,9 +480,9 @@ const QuizResults = () => {
                             style={{ fontSize: "0.76rem", fontWeight: 700 }}
                           >
                             {isCorrect
-                              ? "Correct"
+                              ? t('results_correct_label')
                               : isSelected
-                                ? "Your Answer"
+                                ? t('results_your_answer_label')
                                 : ""}
                           </span>
                         </div>
@@ -496,14 +497,14 @@ const QuizResults = () => {
                       marginBottom: "0.65rem",
                     }}
                   >
-                    Your answer:{" "}
+                    {t('results_your_answer')}:{" "}
                     <strong style={{ color: "var(--text)" }}>
                       {selectedText}
                     </strong>
                     {!q.isCorrect && (
                       <>
                         {" "}
-                        | Correct answer:{" "}
+                        | {t('results_correct_answer')}:{" "}
                         <strong style={{ color: "#166534" }}>
                           {correctText}
                         </strong>
@@ -522,8 +523,8 @@ const QuizResults = () => {
                     disabled={!!explainLoading[q.questionIndex]}
                   >
                     {explainLoading[q.questionIndex]
-                      ? "Generating explanation..."
-                      : "Explain the Answer by Using AI"}
+                      ? t('results_explain_loading')
+                      : t('results_explain_btn')}
                   </button>
 
                   {explainError[q.questionIndex] && (

@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { userAPI } from '../services/api';
+import { useUILang } from '../context/UILanguageContext';
 
 const StudentProfile = () => {
   const { user, updateUser, logout } = useAuth();
   const navigate = useNavigate();
+  const { t } = useUILang();
 
   const [profile, setProfile] = useState(null);
   const [loadError, setLoadError] = useState('');
@@ -110,9 +112,9 @@ const StudentProfile = () => {
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <div className="profile-page-header">
         <button className="btn-back" onClick={() => navigate('/dashboard')}>
-          ← Back to Dashboard
+          {t('profile_back')}
         </button>
-        <h2>My Profile</h2>
+        <h2>{t('profile_title')}</h2>
       </div>
 
       <div className="profile-page-body">
@@ -125,12 +127,12 @@ const StudentProfile = () => {
             <h3>{data?.name}</h3>
             <p>{data?.email}</p>
             <div style={{ marginTop: '0.5rem' }}>
-              <span className="role-badge role-user">Student</span>
+              <span className="role-badge role-user">{t('profile_student')}</span>
             </div>
           </div>
           <div className="profile-hero-meta">
             <div className="meta-item">
-              <span className="meta-label">Member since:</span>
+              <span className="meta-label">{t('profile_member_since')}</span>
               <span>{data?.createdAt ? new Date(data.createdAt).toLocaleDateString() : '—'}</span>
             </div>
           </div>
@@ -139,10 +141,10 @@ const StudentProfile = () => {
         {/* ── Details / Edit Card ─────────────────────────────────────── */}
         <div className="section">
           <div className="section-header">
-            <h3>Account Details</h3>
+            <h3>{t('profile_account_details')}</h3>
             {!editing && (
               <button className="btn btn-success" onClick={handleEdit}>
-                ✏️ Edit Profile
+                {t('profile_edit')}
               </button>
             )}
           </div>
@@ -154,15 +156,15 @@ const StudentProfile = () => {
             /* ── Read-only view ─────────────────────────────────────── */
             <div className="profile-detail-grid">
               <div className="profile-detail-item">
-                <span className="detail-label">Full Name</span>
+                <span className="detail-label">{t('profile_full_name')}</span>
                 <span className="detail-value">{data?.name}</span>
               </div>
               <div className="profile-detail-item">
-                <span className="detail-label">Email Address</span>
+                <span className="detail-label">{t('profile_email')}</span>
                 <span className="detail-value">{data?.email}</span>
               </div>
               <div className="profile-detail-item">
-                <span className="detail-label">Password</span>
+                <span className="detail-label">{t('profile_password')}</span>
                 <span className="detail-value" style={{ letterSpacing: '0.2em' }}>••••••••</span>
               </div>
             </div>
@@ -171,7 +173,7 @@ const StudentProfile = () => {
             <form onSubmit={handleSave} className="form-card">
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="name">Full Name</label>
+                  <label htmlFor="name">{t('profile_full_name')}</label>
                   <input
                     id="name"
                     type="text"
@@ -182,7 +184,7 @@ const StudentProfile = () => {
                   />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="email">Email Address</label>
+                  <label htmlFor="email">{t('profile_email')}</label>
                   <input
                     id="email"
                     type="email"
@@ -197,8 +199,8 @@ const StudentProfile = () => {
               <div className="form-row">
                 <div className="form-group">
                   <label htmlFor="password">
-                    New Password{' '}
-                    <span style={{ color: '#9ca3af', fontWeight: 400 }}>(leave blank to keep current)</span>
+                    {t('profile_new_password')}{' '}
+                    <span style={{ color: '#9ca3af', fontWeight: 400 }}>({t('profile_keep_current')})</span>
                   </label>
                   <input
                     id="password"
@@ -206,19 +208,19 @@ const StudentProfile = () => {
                     name="password"
                     value={form.password}
                     onChange={handleChange}
-                    placeholder="New password (min. 6 characters)"
+                    placeholder={t('profile_new_password_ph')}
                     autoComplete="new-password"
                   />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="confirmPassword">Confirm New Password</label>
+                  <label htmlFor="confirmPassword">{t('profile_confirm_password')}</label>
                   <input
                     id="confirmPassword"
                     type="password"
                     name="confirmPassword"
                     value={form.confirmPassword}
                     onChange={handleChange}
-                    placeholder="Re-enter new password"
+                    placeholder={t('profile_confirm_ph')}
                     autoComplete="new-password"
                   />
                 </div>
@@ -226,10 +228,10 @@ const StudentProfile = () => {
 
               <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
                 <button type="submit" className="btn btn-success" disabled={saving}>
-                  {saving ? 'Saving…' : '✓ Save Changes'}
+                  {saving ? t('profile_saving') : t('profile_save')}
                 </button>
                 <button type="button" className="btn btn-outline" onClick={handleCancel} disabled={saving}>
-                  Cancel
+                  {t('profile_cancel')}
                 </button>
               </div>
             </form>
@@ -239,10 +241,10 @@ const StudentProfile = () => {
         {/* ── Danger Zone ─────────────────────────────────────────────── */}
         <div className="section" style={{ borderTop: '2px solid #fee2e2', marginTop: '1.5rem' }}>
           <div className="section-header">
-            <h3 style={{ color: '#dc2626' }}>⚠️ Danger Zone</h3>
+            <h3 style={{ color: '#dc2626' }}>{t('profile_danger_zone')}</h3>
           </div>
           <p style={{ color: '#6b7280', marginBottom: '1rem' }}>
-            Permanently delete your account. This action cannot be undone and all your data will be lost.
+            {t('profile_danger_desc')}
           </p>
 
           {deleteError && <div className="alert alert-error" style={{ marginBottom: '1rem' }}>{deleteError}</div>}
@@ -252,12 +254,12 @@ const StudentProfile = () => {
               className="btn btn-danger"
               onClick={() => { setShowDeleteConfirm(true); setDeleteError(''); }}
             >
-              Delete My Account
+              {t('profile_delete_btn')}
             </button>
           ) : (
             <div className="form-card" style={{ background: '#fff5f5', border: '1px solid #fca5a5' }}>
               <p style={{ fontWeight: 600, color: '#dc2626', marginBottom: '1rem' }}>
-                Are you sure you want to permanently delete your account?
+                {t('profile_delete_confirm_q')}
               </p>
               <div style={{ display: 'flex', gap: '0.75rem' }}>
                 <button
@@ -265,14 +267,14 @@ const StudentProfile = () => {
                   onClick={handleDelete}
                   disabled={deleting}
                 >
-                  {deleting ? 'Deleting…' : 'Yes, Delete My Account'}
+                  {deleting ? t('profile_deleting') : t('profile_delete_yes')}
                 </button>
                 <button
                   className="btn btn-outline"
                   onClick={() => setShowDeleteConfirm(false)}
                   disabled={deleting}
                 >
-                  Cancel
+                  {t('profile_delete_cancel')}
                 </button>
               </div>
             </div>

@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { QuizProvider } from './context/QuizContext';
+import { UILanguageProvider } from './context/UILanguageContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
@@ -111,11 +112,13 @@ const AppRoutes = () => {
 
 const App = () => (
   <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-    <AuthProvider>
-      <QuizProvider>
-        <AppRoutes />
-      </QuizProvider>
-    </AuthProvider>
+    <UILanguageProvider>
+      <AuthProvider>
+        <QuizProvider>
+          <AppRoutes />
+        </QuizProvider>
+      </AuthProvider>
+    </UILanguageProvider>
   </Router>
 );
 

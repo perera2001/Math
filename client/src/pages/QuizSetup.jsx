@@ -2,37 +2,38 @@ import React, { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { quizAPI } from "../api/quizApi";
 import { useQuiz } from "../context/QuizContext";
+import { useUILang } from "../context/UILanguageContext";
 
 const LESSONS = [
-  { value: "Geometry", icon: "📐" },
-  { value: "Algebra", icon: "🔣" },
-  { value: "Numbers", icon: "🔢" },
+  { value: "Geometry", icon: "📐", key: "setup_lesson_geometry" },
+  { value: "Algebra", icon: "🔣", key: "setup_lesson_algebra" },
+  { value: "Numbers", icon: "🔢", key: "setup_lesson_numbers" },
 ];
 
 const DIFFICULTIES = [
-  { value: "Easy", color: "#10B981" },
-  { value: "Medium", color: "#F59E0B" },
-  { value: "Hard", color: "#EF4444" },
+  { value: "Easy", color: "#10B981", key: "setup_diff_easy" },
+  { value: "Medium", color: "#F59E0B", key: "setup_diff_medium" },
+  { value: "Hard", color: "#EF4444", key: "setup_diff_hard" },
 ];
 
 const TIME_MODES = [
   {
     value: "8min",
     icon: "⚡",
-    label: "8 Minutes",
-    sub: "High Risk · 2× Score",
+    labelKey: "setup_time_8min",
+    subKey: "setup_time_8min_sub",
   },
   {
     value: "16min",
     icon: "⚖️",
-    label: "16 Minutes",
-    sub: "Balanced · 1× Score",
+    labelKey: "setup_time_16min",
+    subKey: "setup_time_16min_sub",
   },
   {
     value: "unlimited",
     icon: "🐢",
-    label: "Unlimited",
-    sub: "Practice · 0.5× Score",
+    labelKey: "setup_time_unlimited",
+    subKey: "setup_time_unlimited_sub",
   },
 ];
 
@@ -47,6 +48,7 @@ const QuizSetup = () => {
   const grade = Number(searchParams.get("grade")) || 9;
   const navigate = useNavigate();
   const { initSession } = useQuiz();
+  const { t } = useUILang();
 
   const [lesson, setLesson] = useState(null);
   const [difficulty, setDifficulty] = useState(null);
@@ -57,7 +59,7 @@ const QuizSetup = () => {
 
   const handleStart = async () => {
     if (!lesson || !difficulty || !timeMode) {
-      setError("Please select a lesson, difficulty, and time mode.");
+      setError(t('setup_error'));
       return;
     }
     setError("");
@@ -94,8 +96,8 @@ const QuizSetup = () => {
   return (
     <div className="page-container" style={{ maxWidth: 680, margin: "0 auto" }}>
       <div className="page-header">
-        <h1 className="page-title">Grade {grade} — Configure Your Quiz</h1>
-        <p className="page-subtitle">8 questions · customise your challenge</p>
+        <h1 className="page-title">Grade {grade} — {t('setup_title')}</h1>
+        <p className="page-subtitle">{t('setup_subtitle')}</p>
       </div>
 
       {/* Lesson selector */}
@@ -103,7 +105,7 @@ const QuizSetup = () => {
         className="card"
         style={{ marginBottom: "1.2rem", padding: "1.4rem" }}
       >
-        <h3 style={{ marginBottom: "1rem", fontWeight: 600 }}>Select Lesson</h3>
+        <h3 style={{ marginBottom: "1rem", fontWeight: 600 }}>{t('setup_lesson')}</h3>
         <div
           style={{
             display: "grid",
@@ -111,7 +113,7 @@ const QuizSetup = () => {
             gap: "0.8rem",
           }}
         >
-          {LESSONS.map(({ value, icon }) => (
+          {LESSONS.map(({ value, icon, key }) => (
             <button
               key={value}
               onClick={() => setLesson(value)}
@@ -126,7 +128,7 @@ const QuizSetup = () => {
               <div style={{ fontSize: "2rem", marginBottom: "0.3rem" }}>
                 {icon}
               </div>
-              {value}
+              {t(key)}
             </button>
           ))}
         </div>
@@ -138,10 +140,10 @@ const QuizSetup = () => {
         style={{ marginBottom: "1.2rem", padding: "1.4rem" }}
       >
         <h3 style={{ marginBottom: "1rem", fontWeight: 600 }}>
-          Select Difficulty
+          {t('setup_difficulty')}
         </h3>
         <div style={{ display: "flex", gap: "0.8rem" }}>
-          {DIFFICULTIES.map(({ value, color }) => (
+          {DIFFICULTIES.map(({ value, color, key }) => (
             <button
               key={value}
               onClick={() => setDifficulty(value)}
@@ -161,7 +163,7 @@ const QuizSetup = () => {
                 transition: "all 0.15s",
               }}
             >
-              {value}
+              {t(key)}
             </button>
           ))}
         </div>
@@ -173,7 +175,7 @@ const QuizSetup = () => {
         style={{ marginBottom: "1.2rem", padding: "1.4rem" }}
       >
         <h3 style={{ marginBottom: "1rem", fontWeight: 600 }}>
-          Select Time Mode
+          {t('setup_time')}
         </h3>
         <div
           style={{
@@ -182,7 +184,7 @@ const QuizSetup = () => {
             gap: "0.8rem",
           }}
         >
-          {TIME_MODES.map(({ value, icon, label, sub }) => (
+          {TIME_MODES.map(({ value, icon, labelKey, subKey }) => (
             <button
               key={value}
               onClick={() => setTimeMode(value)}
@@ -196,7 +198,7 @@ const QuizSetup = () => {
                 {icon}
               </div>
               <div style={{ fontWeight: 700, fontSize: "0.95rem" }}>
-                {label}
+                {t(labelKey)}
               </div>
               <div
                 style={{
@@ -205,7 +207,7 @@ const QuizSetup = () => {
                   marginTop: "0.2rem",
                 }}
               >
-                {sub}
+                {t(subKey)}
               </div>
             </button>
           ))}
@@ -218,7 +220,7 @@ const QuizSetup = () => {
         style={{ marginBottom: "1.5rem", padding: "1.4rem" }}
       >
         <h3 style={{ marginBottom: "0.4rem", fontWeight: 600 }}>
-          Select Language
+          {t('setup_language')}
         </h3>
         <p
           style={{
@@ -228,7 +230,7 @@ const QuizSetup = () => {
             marginTop: 0,
           }}
         >
-          Questions will be shown in your chosen language where available.
+          {t('setup_language_hint')}
         </p>
         <div
           style={{
@@ -297,7 +299,7 @@ const QuizSetup = () => {
         disabled={loading || !lesson || !difficulty || !timeMode}
         style={{ fontSize: "1rem", padding: "0.85rem" }}
       >
-        {loading ? "Loading questions…" : "🚀 Start Quiz"}
+        {loading ? t('setup_loading') : t('setup_start')}
       </button>
     </div>
   );

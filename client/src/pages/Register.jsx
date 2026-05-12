@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useUILang } from '../context/UILanguageContext';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -12,6 +13,7 @@ const Register = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
+  const { t } = useUILang();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -43,75 +45,75 @@ const Register = () => {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h2>🎓 Student Registration</h2>
-        <p className="auth-subtitle">Create your student account</p>
+        <h2>{t('register_title')}</h2>
+        <p className="auth-subtitle">{t('register_subtitle')}</p>
 
         {error && <div className="alert alert-error">{error}</div>}
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="name">Full Name</label>
+            <label htmlFor="name">{t('register_name')}</label>
             <input
               id="name"
               type="text"
               name="name"
               value={formData.name}
               onChange={handleChange}
-              placeholder="Enter your full name"
+              placeholder={t('register_name_ph')}
               autoComplete="name"
               required
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="email">Email Address</label>
+            <label htmlFor="email">{t('register_email')}</label>
             <input
               id="email"
               type="email"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="Enter your email"
+              placeholder={t('register_email_ph')}
               autoComplete="email"
               required
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">{t('register_password')}</label>
             <input
               id="password"
               type="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
-              placeholder="Create a password (min. 6 characters)"
+              placeholder={t('register_password_ph')}
               autoComplete="new-password"
               required
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="confirmPassword">Confirm Password</label>
+            <label htmlFor="confirmPassword">{t('register_confirm')}</label>
             <input
               id="confirmPassword"
               type="password"
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
-              placeholder="Re-enter your password"
+              placeholder={t('register_confirm_ph')}
               autoComplete="new-password"
               required
             />
           </div>
 
           <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? 'Creating account…' : 'Register'}
+            {loading ? t('register_loading') : t('register_btn')}
           </button>
         </form>
 
         <p className="auth-link">
-          Already have an account? <Link to="/login">Login here</Link>
+          {t('register_have_account')} <Link to="/login">{t('register_login_link')}</Link>
         </p>
       </div>
     </div>
