@@ -4,6 +4,27 @@ import { quizAPI } from '../api/quizApi';
 
 const STAR_COLOR = '#FBBF24';
 const STAR_EMPTY = '#d1d5db';
+const LABELS = ['A', 'B', 'C', 'D'];
+
+const resolveText = (val, lang = 'en') => {
+  if (!val) return '';
+  if (typeof val === 'string') return val;
+  return val[lang] || val.en || '';
+};
+
+// Render **bold** markers and newlines as React elements
+const renderMarkdown = (text) => {
+  if (!text) return null;
+  return text.split(/\n/).flatMap((line, lineIdx, lines) => {
+    const segments = line.split(/(\*\*[^*]+\*\*)/g).map((seg, segIdx) => {
+      if (seg.startsWith('**') && seg.endsWith('**')) {
+        return <strong key={`${lineIdx}-${segIdx}`}>{seg.slice(2, -2)}</strong>;
+      }
+      return seg;
+    });
+    return lineIdx < lines.length - 1 ? [...segments, <br key={`br-${lineIdx}`} />] : segments;
+  });
+};
 
 /* Simple CSS confetti — 20 coloured spans positioned absolutely */
 const Confetti = () => {
@@ -42,21 +63,30 @@ const QuizResults = () => {
   const [visibleStars, setVisibleStars] = useState(0);
   const [loading, setLoading] = useState(true);
   const [grade, setGrade] = useState(null);
+  const [explanations, setExplanations] = useState({});
+  const [explainLoading, setExplainLoading] = useState({});
+  const [explainError, setExplainError] = useState({});
+  const [explanationLanguage, setExplanationLanguage] = useState('en');
   const animRef = useRef(null);
 
   useEffect(() => {
-    // Results are passed from QuizPlay via navigation but may not exist if user
-    // lands directly — fetch from history in that case.
     const load = async () => {
       try {
-        const res = await quizAPI.getHistory();
-        const session = res.data.sessions.find((s) => s._id === sessionId);
-        if (session) {
-          setResult(session);
-          setGrade(session.grade);
-        }
+        const res = await quizAPI.getResult(sessionId);
+        setResult(res.data);
+        setGrade(res.data.grade);
       } catch {
-        // ignore
+        // Fallback: older backend versions may only support history summary.
+        try {
+          const historyRes = await quizAPI.getHistory();
+          const session = historyRes.data.sessions.find((s) => s._id === sessionId);
+          if (session) {
+            setResult(session);
+            setGrade(session.grade);
+          }
+        } catch {
+          // ignore
+        }
       } finally {
         setLoading(false);
       }
@@ -103,9 +133,37 @@ const QuizResults = () => {
     : 0;
 
   const showConfetti = result.starsEarned >= 3;
+  const language = result.language || 'en';
+
+  const perQuestion = Array.isArray(result.perQuestion) ? result.perQuestion : [];
+
+  const fetchExplanation = async (questionIndex) => {
+    setExplainLoading((prev) => ({ ...prev, [questionIndex]: true }));
+    setExplainError((prev) => ({ ...prev, [questionIndex]: '' }));
+
+    try {
+      const res = await quizAPI.explainAnswer({
+        sessionId,
+        questionIndex,
+        language: explanationLanguage,
+      });
+
+      setExplanations((prev) => ({
+        ...prev,
+        [questionIndex]: res.data.explanation,
+      }));
+    } catch (err) {
+      setExplainError((prev) => ({
+        ...prev,
+        [questionIndex]: err.response?.data?.message || 'Failed to generate explanation.',
+      }));
+    } finally {
+      setExplainLoading((prev) => ({ ...prev, [questionIndex]: false }));
+    }
+  };
 
   return (
-    <div style={{ maxWidth: 640, margin: '0 auto', padding: '1.5rem', position: 'relative' }}>
+    <div style={{ maxWidth: 980, margin: '0 auto', padding: '1.5rem', position: 'relative' }}>
       {showConfetti && <Confetti />}
 
       <div className="card" style={{ textAlign: 'center', padding: '2.5rem 2rem', position: 'relative', zIndex: 1 }}>
@@ -193,6 +251,180 @@ const QuizResults = () => {
             🏠 Dashboard
           </button>
         </div>
+      </div>
+
+      <div className="card" style={{ marginTop: '1.2rem', padding: '1.2rem 1.1rem' }}>
+        <div style={{ marginBottom: '1rem' }}>
+          <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800 }}>Answer Review</h3>
+          <p style={{ margin: '0.35rem 0 0', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+            Review all 8 questions, your selected answer, and the correct answer.
+          </p>
+
+          {/* Explanation Language Selector */}
+          <div style={{ marginTop: '1rem', display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)' }}>Explanation Language:</span>
+            {['en', 'si', 'ta'].map((lang) => {
+              const labels = { en: 'English', si: 'සිංහල', ta: 'தமிழ்' };
+              return (
+                <button
+                  key={lang}
+                  onClick={() => setExplanationLanguage(lang)}
+                  style={{
+                    padding: '0.45rem 0.85rem',
+                    borderRadius: '6px',
+                    border: explanationLanguage === lang ? '2px solid var(--primary)' : '1px solid var(--border)',
+                    background: explanationLanguage === lang ? 'var(--primary)' : 'var(--bg)',
+                    color: explanationLanguage === lang ? '#fff' : 'var(--text)',
+                    fontWeight: explanationLanguage === lang ? 700 : 500,
+                    fontSize: '0.8rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  {labels[lang]}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {perQuestion.length === 0 ? (
+          <div style={{ color: 'var(--text-muted)', padding: '0.5rem 0' }}>
+            Detailed question review is not available for this session.
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
+            {perQuestion.map((q) => {
+              const questionText = resolveText(q.questionText, language);
+              const selectedIdx = q.userAnswerIndex;
+              const correctIdx = q.correctAnswerIndex;
+              const selectedText =
+                selectedIdx === null || selectedIdx === undefined
+                  ? 'Not answered'
+                  : resolveText(q.options[selectedIdx], language);
+              const correctText = resolveText(q.options[correctIdx], language);
+
+              return (
+                <div
+                  key={q.questionIndex}
+                  style={{
+                    border: `1px solid ${q.isCorrect ? '#bbf7d0' : '#fecaca'}`,
+                    borderLeft: `4px solid ${q.isCorrect ? '#10B981' : '#EF4444'}`,
+                    borderRadius: '12px',
+                    padding: '0.95rem',
+                    background: q.isCorrect ? '#f0fdf4' : '#fef2f2',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.8rem', marginBottom: '0.7rem' }}>
+                    <div style={{ fontWeight: 700, lineHeight: 1.45 }}>
+                      Q{q.questionIndex + 1}. {questionText}
+                    </div>
+                    <div
+                      style={{
+                        flexShrink: 0,
+                        alignSelf: 'flex-start',
+                        padding: '0.2rem 0.5rem',
+                        borderRadius: '999px',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        background: q.isCorrect ? '#dcfce7' : '#fee2e2',
+                        color: q.isCorrect ? '#166534' : '#991b1b',
+                      }}
+                    >
+                      {q.isCorrect ? 'Correct' : 'Wrong'}
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gap: '0.45rem', marginBottom: '0.7rem' }}>
+                    {(q.options || []).map((opt, idx) => {
+                      const text = resolveText(opt, language);
+                      const isSelected = idx === selectedIdx;
+                      const isCorrect = idx === correctIdx;
+
+                      let borderColor = 'var(--border)';
+                      let background = '#fff';
+                      if (isCorrect) {
+                        borderColor = '#10B981';
+                        background = '#ecfdf5';
+                      } else if (isSelected && !q.isCorrect) {
+                        borderColor = '#EF4444';
+                        background = '#fee2e2';
+                      }
+
+                      return (
+                        <div
+                          key={idx}
+                          style={{
+                            border: `1px solid ${borderColor}`,
+                            background,
+                            borderRadius: '10px',
+                            padding: '0.55rem 0.65rem',
+                            fontSize: '0.9rem',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            gap: '0.7rem',
+                          }}
+                        >
+                          <span>
+                            <strong style={{ marginRight: '0.3rem' }}>{LABELS[idx]}.</strong>
+                            {text}
+                          </span>
+                          <span style={{ fontSize: '0.76rem', fontWeight: 700 }}>
+                            {isCorrect ? 'Correct' : isSelected ? 'Your Answer' : ''}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div style={{ fontSize: '0.84rem', color: 'var(--text-muted)', marginBottom: '0.65rem' }}>
+                    Your answer: <strong style={{ color: 'var(--text)' }}>{selectedText}</strong>
+                    {!q.isCorrect && (
+                      <>
+                        {' '}
+                        | Correct answer: <strong style={{ color: '#166534' }}>{correctText}</strong>
+                      </>
+                    )}
+                  </div>
+
+                  <button
+                    className="btn btn-primary"
+                    style={{ width: 'auto', padding: '0.55rem 0.95rem', fontSize: '0.85rem' }}
+                    onClick={() => fetchExplanation(q.questionIndex)}
+                    disabled={!!explainLoading[q.questionIndex]}
+                  >
+                    {explainLoading[q.questionIndex]
+                      ? 'Generating explanation...'
+                      : 'Explain the Answer by Using AI'}
+                  </button>
+
+                  {explainError[q.questionIndex] && (
+                    <div style={{ marginTop: '0.55rem', color: '#b91c1c', fontSize: '0.85rem' }}>
+                      {explainError[q.questionIndex]}
+                    </div>
+                  )}
+
+                  {explanations[q.questionIndex] && (
+                    <div
+                      style={{
+                        marginTop: '0.55rem',
+                        borderRadius: '10px',
+                        border: '1px solid #bfdbfe',
+                        background: '#eff6ff',
+                        padding: '0.7rem 0.8rem',
+                        fontSize: '0.9rem',
+                        lineHeight: 1.55,
+                      }}
+                    >
+                      {renderMarkdown(explanations[q.questionIndex])}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

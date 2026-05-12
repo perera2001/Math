@@ -48,7 +48,7 @@ const QuizSetup = () => {
     setError('');
     setLoading(true);
     try {
-      const res = await quizAPI.start({ grade, lesson, difficulty, timeMode });
+      const res = await quizAPI.start({ grade, lesson, difficulty, timeMode, language });
       initSession(res.data, { grade, lesson, difficulty, timeMode, language });
       navigate(`/student/quiz/play/${res.data.sessionId}`);
     } catch (err) {

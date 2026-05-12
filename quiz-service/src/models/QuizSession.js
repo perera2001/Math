@@ -21,6 +21,7 @@ const quizSessionSchema = new mongoose.Schema(
   {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     grade: { type: Number, enum: [9, 10, 11], required: true },
+    language: { type: String, enum: ['en', 'si', 'ta'], default: 'en' },
     lesson: { type: String, enum: ['Geometry', 'Algebra', 'Numbers'], required: true },
     difficulty: { type: String, enum: ['Easy', 'Medium', 'Hard'], required: true },
     timeMode: { type: String, enum: ['8min', '16min', 'unlimited'], required: true },

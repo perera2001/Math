@@ -2,7 +2,7 @@ const quizService = require('../services/quizService');
 
 const start = async (req, res, next) => {
   try {
-    const { grade, lesson, difficulty, timeMode } = req.body;
+    const { grade, lesson, difficulty, timeMode, language } = req.body;
 
     if (!grade || !lesson || !difficulty || !timeMode) {
       return res.status(400).json({ message: 'grade, lesson, difficulty, and timeMode are required' });
@@ -13,6 +13,7 @@ const start = async (req, res, next) => {
       lesson,
       difficulty,
       timeMode,
+      language,
       userId: req.user.id,
     });
 
@@ -106,4 +107,43 @@ const stats = async (req, res, next) => {
   }
 };
 
-module.exports = { start, answer, lifeline, complete, history, stats };
+const result = async (req, res, next) => {
+  try {
+    const { sessionId } = req.params;
+    if (!sessionId) {
+      return res.status(400).json({ message: 'sessionId is required' });
+    }
+
+    const quizResult = await quizService.getResultBySession({
+      sessionId,
+      userId: req.user.id,
+    });
+
+    return res.status(200).json(quizResult);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const explainAnswer = async (req, res, next) => {
+  try {
+    const { sessionId, questionIndex, language } = req.body;
+
+    if (!sessionId || questionIndex === undefined) {
+      return res.status(400).json({ message: 'sessionId and questionIndex are required' });
+    }
+
+    const explanationResult = await quizService.explainQuestionAnswer({
+      sessionId,
+      questionIndex,
+      language,
+      userId: req.user.id,
+    });
+
+    return res.status(200).json(explanationResult);
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { start, answer, lifeline, complete, history, stats, result, explainAnswer };

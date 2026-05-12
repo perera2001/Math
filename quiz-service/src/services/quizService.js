@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const QuizSession = require('../models/QuizSession');
 const UserStats = require('../models/UserStats');
+const { explainAnswer: explainAnswerWithAI } = require('./aiExplanationService');
 
 // Read-only reference to the shared 'questions' collection
 const QuestionSchema = new mongoose.Schema(
@@ -25,8 +26,22 @@ const BASE_POINTS = { Easy: 10, Medium: 20, Hard: 30 };
 const TIME_MULTIPLIER = { '8min': 2.0, '16min': 1.0, unlimited: 0.5 };
 const TIME_LIMITS = { '8min': 480, '16min': 960, unlimited: null };
 
+const _buildPerQuestionReview = (questions = []) =>
+  questions.map((q, i) => {
+    const correctAnswerIndex = q.answers.findIndex((a) => a.isCorrect);
+    return {
+      questionIndex: i,
+      questionText: q.questionText,
+      options: q.answers.map((a) => a.text),
+      isCorrect: q.isCorrect,
+      userAnswerIndex: q.userAnswerIndex,
+      correctAnswerIndex,
+      timeSpent: q.timeSpent,
+    };
+  });
+
 // ── startQuiz ────────────────────────────────────────────────────────────────
-const startQuiz = async ({ grade, lesson, difficulty, timeMode, userId }) => {
+const startQuiz = async ({ grade, lesson, difficulty, timeMode, language = 'en', userId }) => {
   // Use $sample to pick 8 random questions directly from the shared collection
   const selected = await Question.aggregate([
     { $match: { lesson, difficulty, grade: Number(grade) } },
@@ -50,6 +65,7 @@ const startQuiz = async ({ grade, lesson, difficulty, timeMode, userId }) => {
   const session = await QuizSession.create({
     userId,
     grade,
+    language,
     lesson,
     difficulty,
     timeMode,
@@ -233,19 +249,103 @@ const completeQuiz = async ({ sessionId, timeSpentTotal, userId }) => {
   );
 
   return {
+    sessionId: session._id,
+    grade: session.grade,
+    language: session.language || 'en',
+    lesson: session.lesson,
+    difficulty: session.difficulty,
+    completedAt: session.completedAt,
     totalScore: session.totalScore,
     starsEarned: stars,
     correctCount,
     maxStreak: session.maxStreak,
+    timeSpentTotal: session.timeSpentTotal,
     lifelinesUsed: session.lifelinesUsed,
-    perQuestion: session.questions.map((q, i) => ({
-      questionIndex: i,
-      questionText: q.questionText,
-      isCorrect: q.isCorrect,
-      userAnswerIndex: q.userAnswerIndex,
-      correctAnswerIndex: q.answers.findIndex((a) => a.isCorrect),
-      timeSpent: q.timeSpent,
-    })),
+    perQuestion: _buildPerQuestionReview(session.questions),
+  };
+};
+
+// ── getResultBySession ──────────────────────────────────────────────────────
+const getResultBySession = async ({ sessionId, userId }) => {
+  const session = await QuizSession.findById(sessionId);
+
+  if (!session || session.userId.toString() !== String(userId)) {
+    const err = new Error('Session not found');
+    err.statusCode = 404;
+    throw err;
+  }
+
+  if (session.status !== 'completed') {
+    const err = new Error('Quiz is not completed yet');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  return {
+    sessionId: session._id,
+    grade: session.grade,
+    language: session.language || 'en',
+    lesson: session.lesson,
+    difficulty: session.difficulty,
+    totalScore: session.totalScore,
+    starsEarned: session.starsEarned,
+    correctCount: session.correctCount,
+    maxStreak: session.maxStreak,
+    timeSpentTotal: session.timeSpentTotal,
+    completedAt: session.completedAt,
+    lifelinesUsed: session.lifelinesUsed,
+    perQuestion: _buildPerQuestionReview(session.questions),
+  };
+};
+
+// ── explainQuestionAnswer ───────────────────────────────────────────────────
+const explainQuestionAnswer = async ({ sessionId, questionIndex, language, userId }) => {
+  const session = await QuizSession.findById(sessionId);
+
+  if (!session || session.userId.toString() !== String(userId)) {
+    const err = new Error('Session not found');
+    err.statusCode = 404;
+    throw err;
+  }
+
+  if (session.status !== 'completed') {
+    const err = new Error('Quiz must be completed before requesting explanations');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const qIndex = Number(questionIndex);
+  if (!Number.isInteger(qIndex) || qIndex < 0 || qIndex >= session.questions.length) {
+    const err = new Error('questionIndex is out of range');
+    err.statusCode = 400;
+    throw err;
+  }
+
+  const question = session.questions[qIndex];
+  const lang = language || session.language || 'en';
+
+  const resolveText = (value) => {
+    if (!value) return '';
+    if (typeof value === 'string') return value;
+    return value[lang] || value.en || '';
+  };
+
+  const questionText = resolveText(question.questionText);
+  const options = question.answers.map((a) => resolveText(a.text));
+  const correctAnswerIndex = question.answers.findIndex((a) => a.isCorrect);
+
+  const explanation = await explainAnswerWithAI({
+    language: lang,
+    questionText,
+    options,
+    userAnswerIndex: question.userAnswerIndex,
+    correctAnswerIndex,
+  });
+
+  return {
+    sessionId: session._id,
+    questionIndex: qIndex,
+    explanation,
   };
 };
 
@@ -305,4 +405,13 @@ function _calculateStars(session, timeSpentTotal, correctCount) {
   return stars;
 }
 
-module.exports = { startQuiz, answerQuestion, useLifeline, completeQuiz, getHistory, getStats };
+module.exports = {
+  startQuiz,
+  answerQuestion,
+  useLifeline,
+  completeQuiz,
+  getHistory,
+  getStats,
+  getResultBySession,
+  explainQuestionAnswer,
+};
