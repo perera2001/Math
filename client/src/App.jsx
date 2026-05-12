@@ -1,19 +1,25 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import { QuizProvider } from './context/QuizContext';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
-import CreateQuestion from './pages/CreateQuestion';
-import AdminProfile from './pages/AdminProfile';
-import StudentProfile from './pages/StudentProfile';
-import StudentDashboard from './pages/StudentDashboard';
-import QuizSetup from './pages/QuizSetup';
-import QuizPlay from './pages/QuizPlay';
-import QuizResults from './pages/QuizResults';
-import ProtectedRoute from './components/ProtectedRoute';
-import Navbar from './components/Navbar';
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import { QuizProvider } from "./context/QuizContext";
+import { UILanguageProvider } from "./context/UILanguageContext";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import CreateQuestion from "./pages/CreateQuestion";
+import AdminProfile from "./pages/AdminProfile";
+import StudentProfile from "./pages/StudentProfile";
+import StudentDashboard from "./pages/StudentDashboard";
+import QuizSetup from "./pages/QuizSetup";
+import QuizPlay from "./pages/QuizPlay";
+import QuizResults from "./pages/QuizResults";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Navbar from "./components/Navbar";
 
 const AppRoutes = () => {
   const { user, loading } = useAuth();
@@ -21,7 +27,8 @@ const AppRoutes = () => {
   if (loading) return <div className="page-loading">Loading MathsApp…</div>;
 
   // Redirect students from the generic /dashboard to their own dashboard
-  const defaultDash = user?.role === 'USER' ? '/student/dashboard' : '/dashboard';
+  const defaultDash =
+    user?.role === "USER" ? "/student/dashboard" : "/dashboard";
 
   return (
     <>
@@ -38,7 +45,7 @@ const AppRoutes = () => {
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute allowedRoles={['ADMIN', 'SUPER_ADMIN']}>
+            <ProtectedRoute allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
               <Dashboard />
             </ProtectedRoute>
           }
@@ -46,7 +53,7 @@ const AppRoutes = () => {
         <Route
           path="/coordinator/create-question"
           element={
-            <ProtectedRoute allowedRoles={['ADMIN', 'SUPER_ADMIN']}>
+            <ProtectedRoute allowedRoles={["ADMIN", "SUPER_ADMIN"]}>
               <CreateQuestion />
             </ProtectedRoute>
           }
@@ -54,7 +61,7 @@ const AppRoutes = () => {
         <Route
           path="/coordinator/profile"
           element={
-            <ProtectedRoute allowedRoles={['ADMIN']}>
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
               <AdminProfile />
             </ProtectedRoute>
           }
@@ -62,7 +69,7 @@ const AppRoutes = () => {
         <Route
           path="/student/profile"
           element={
-            <ProtectedRoute allowedRoles={['USER']}>
+            <ProtectedRoute allowedRoles={["USER"]}>
               <StudentProfile />
             </ProtectedRoute>
           }
@@ -70,7 +77,7 @@ const AppRoutes = () => {
         <Route
           path="/student/dashboard"
           element={
-            <ProtectedRoute allowedRoles={['USER']}>
+            <ProtectedRoute allowedRoles={["USER"]}>
               <StudentDashboard />
             </ProtectedRoute>
           }
@@ -78,7 +85,7 @@ const AppRoutes = () => {
         <Route
           path="/student/quiz/setup"
           element={
-            <ProtectedRoute allowedRoles={['USER']}>
+            <ProtectedRoute allowedRoles={["USER"]}>
               <QuizSetup />
             </ProtectedRoute>
           }
@@ -86,7 +93,7 @@ const AppRoutes = () => {
         <Route
           path="/student/quiz/play/:sessionId"
           element={
-            <ProtectedRoute allowedRoles={['USER']}>
+            <ProtectedRoute allowedRoles={["USER"]}>
               <QuizPlay />
             </ProtectedRoute>
           }
@@ -94,14 +101,14 @@ const AppRoutes = () => {
         <Route
           path="/student/quiz/results/:sessionId"
           element={
-            <ProtectedRoute allowedRoles={['USER']}>
+            <ProtectedRoute allowedRoles={["USER"]}>
               <QuizResults />
             </ProtectedRoute>
           }
         />
         <Route
           path="/"
-          element={<Navigate to={user ? defaultDash : '/login'} replace />}
+          element={<Navigate to={user ? defaultDash : "/login"} replace />}
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
@@ -111,11 +118,13 @@ const AppRoutes = () => {
 
 const App = () => (
   <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-    <AuthProvider>
-      <QuizProvider>
-        <AppRoutes />
-      </QuizProvider>
-    </AuthProvider>
+    <UILanguageProvider>
+      <AuthProvider>
+        <QuizProvider>
+          <AppRoutes />
+        </QuizProvider>
+      </AuthProvider>
+    </UILanguageProvider>
   </Router>
 );
 

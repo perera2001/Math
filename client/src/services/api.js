@@ -58,6 +58,7 @@ export const questionAPI = {
   update: (id, data) => api.put(`/questions/${id}`, data),
   delete: (id) => api.delete(`/questions/${id}`),
   getStats: () => api.get('/questions/stats'),
+  translate: (data) => api.post('/questions/translate', data, { timeout: 35000 }),
 };
 
 export default api;

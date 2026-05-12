@@ -2,6 +2,14 @@ import React, { createContext, useContext, useState, useRef, useCallback } from 
 
 const QuizContext = createContext(null);
 
+// Resolve a multilingual text field to a plain string for the selected language.
+// Falls back to English if the chosen language has no content.
+const resolveText = (val, lang) => {
+  if (!val) return '';
+  if (typeof val === 'string') return val;
+  return val[lang] || val.en || '';
+};
+
 export const QuizProvider = ({ children }) => {
   const [sessionId, setSessionId] = useState(null);
   const [questions, setQuestions] = useState([]);
@@ -18,13 +26,26 @@ export const QuizProvider = ({ children }) => {
   const [timeMode, setTimeMode] = useState(null);
   const [difficulty, setDifficulty] = useState(null);
   const [lesson, setLesson] = useState(null);
+  const [language, setLanguage] = useState('en');
 
   // Track elapsed time (seconds) — updated by QuizPlay
   const elapsedRef = useRef(0);
 
   const initSession = useCallback((data, config) => {
+    const lang = config.language || 'en';
+
+    // Map multilingual question/answer objects to plain strings for the selected language
+    const mapped = data.questions.map((q) => ({
+      ...q,
+      text: resolveText(q.text, lang),
+      answers: q.answers.map((a) => ({
+        ...a,
+        text: resolveText(a.text, lang),
+      })),
+    }));
+
     setSessionId(data.sessionId);
-    setQuestions(data.questions);
+    setQuestions(mapped);
     setCurrentIndex(0);
     setAnswers([]);
     setScore(0);
@@ -34,6 +55,7 @@ export const QuizProvider = ({ children }) => {
     setTimeMode(config.timeMode);
     setDifficulty(config.difficulty);
     setLesson(config.lesson);
+    setLanguage(lang);
     elapsedRef.current = 0;
   }, []);
 
@@ -75,6 +97,7 @@ export const QuizProvider = ({ children }) => {
         timeMode,
         difficulty,
         lesson,
+        language,
         elapsedRef,
         initSession,
         recordAnswer,

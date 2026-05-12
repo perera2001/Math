@@ -1,11 +1,17 @@
 const mongoose = require('mongoose');
 
+const multilingualTextSchema = {
+  en: { type: String, trim: true, default: '' },
+  si: { type: String, trim: true, default: '' },
+  ta: { type: String, trim: true, default: '' },
+};
+
 const answerSchema = new mongoose.Schema(
   {
     text: {
-      type: String,
-      required: [true, 'Answer text is required'],
-      trim: true,
+      en: { type: String, required: [true, 'Answer text (en) is required'], trim: true },
+      si: { type: String, trim: true, default: '' },
+      ta: { type: String, trim: true, default: '' },
     },
     isCorrect: {
       type: Boolean,
@@ -34,10 +40,14 @@ const questionSchema = new mongoose.Schema(
       required: [true, 'Difficulty is required'],
     },
     questionText: {
-      type: String,
-      required: [true, 'Question text is required'],
-      trim: true,
-      minlength: [10, 'Question text must be at least 10 characters'],
+      en: {
+        type: String,
+        required: [true, 'Question text (en) is required'],
+        trim: true,
+        minlength: [10, 'Question text must be at least 10 characters'],
+      },
+      si: { type: String, trim: true, default: '' },
+      ta: { type: String, trim: true, default: '' },
     },
     answers: {
       type: [answerSchema],
