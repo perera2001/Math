@@ -118,7 +118,9 @@ const AppRoutes = () => {
         />
         <Route
           path="/"
-          element={user ? <Navigate to={defaultDash} replace /> : <LandingPage />}
+          element={
+            user ? <Navigate to={defaultDash} replace /> : <LandingPage />
+          }
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

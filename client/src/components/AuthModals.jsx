@@ -23,7 +23,9 @@ export const LoginModal = ({ onClose, onSwitchToRegister }) => {
       onClose();
       navigate(user?.role === "USER" ? "/student/dashboard" : "/dashboard");
     } catch (err) {
-      setError(err.response?.data?.message || "Invalid credentials. Please try again.");
+      setError(
+        err.response?.data?.message || "Invalid credentials. Please try again.",
+      );
     } finally {
       setLoading(false);
     }
@@ -32,7 +34,9 @@ export const LoginModal = ({ onClose, onSwitchToRegister }) => {
   return (
     <div className="lp-modal-backdrop" onClick={onClose}>
       <div className="lp-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="lp-modal-close" onClick={onClose}>&#10005;</button>
+        <button className="lp-modal-close" onClick={onClose}>
+          &#10005;
+        </button>
 
         <div className="lp-modal-logo">
           <span>🧮</span>
@@ -40,7 +44,9 @@ export const LoginModal = ({ onClose, onSwitchToRegister }) => {
         </div>
 
         <h2 className="lp-modal-title">Welcome Back!</h2>
-        <p className="lp-modal-sub">Sign in to continue your learning journey</p>
+        <p className="lp-modal-sub">
+          Sign in to continue your learning journey
+        </p>
 
         {error && <div className="lp-modal-error">{error}</div>}
 
@@ -110,7 +116,9 @@ export const RegisterModal = ({ onClose, onSwitchToLogin }) => {
       onClose();
       navigate("/student/dashboard");
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed. Please try again.");
+      setError(
+        err.response?.data?.message || "Registration failed. Please try again.",
+      );
     } finally {
       setLoading(false);
     }
@@ -119,7 +127,9 @@ export const RegisterModal = ({ onClose, onSwitchToLogin }) => {
   return (
     <div className="lp-modal-backdrop" onClick={onClose}>
       <div className="lp-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="lp-modal-close" onClick={onClose}>&#10005;</button>
+        <button className="lp-modal-close" onClick={onClose}>
+          &#10005;
+        </button>
 
         <div className="lp-modal-logo">
           <span>🧮</span>
@@ -127,7 +137,9 @@ export const RegisterModal = ({ onClose, onSwitchToLogin }) => {
         </div>
 
         <h2 className="lp-modal-title">Create Account</h2>
-        <p className="lp-modal-sub">Join thousands of students excelling in maths</p>
+        <p className="lp-modal-sub">
+          Join thousands of students excelling in maths
+        </p>
 
         {error && <div className="lp-modal-error">{error}</div>}
 

@@ -145,57 +145,65 @@ const Navbar = () => {
 
   return (
     <>
-    <nav className="navbar">
-      <div className="navbar-brand">{t("nav_brand")}</div>
+      <nav className="navbar">
+        <div className="navbar-brand">{t("nav_brand")}</div>
 
-      <div className="navbar-links">
-        {/* Language switcher */}
-        <div style={{ display: "flex", gap: "0.35rem", marginRight: "0.4rem" }}>
-          {langBtn("en", "EN")}
-          {langBtn("si", "සිං")}
-          {langBtn("ta", "த")}
+        <div className="navbar-links">
+          {/* Language switcher */}
+          <div
+            style={{ display: "flex", gap: "0.35rem", marginRight: "0.4rem" }}
+          >
+            {langBtn("en", "EN")}
+            {langBtn("si", "සිං")}
+            {langBtn("ta", "த")}
+          </div>
+
+          {user ? (
+            <>
+              {(user.role === "ADMIN" || user.role === "SUPER_ADMIN") && (
+                <Link to="/dashboard">{t("nav_dashboard")}</Link>
+              )}
+              <span className="user-chip">
+                {roleLabel[user.role] || user.role} · {user.name}
+              </span>
+              <button onClick={handleLogout} className="btn btn-danger">
+                {t("nav_logout")}
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                className="btn btn-outline"
+                onClick={() => setModal("login")}
+                style={{ cursor: "pointer" }}
+              >
+                {t("nav_login")}
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => setModal("register")}
+                style={{ cursor: "pointer" }}
+              >
+                {t("nav_register")}
+              </button>
+            </>
+          )}
         </div>
+      </nav>
 
-        {user ? (
-          <>
-            {(user.role === "ADMIN" || user.role === "SUPER_ADMIN") && (
-              <Link to="/dashboard">{t("nav_dashboard")}</Link>
-            )}
-            <span className="user-chip">
-              {roleLabel[user.role] || user.role} · {user.name}
-            </span>
-            <button onClick={handleLogout} className="btn btn-danger">
-              {t("nav_logout")}
-            </button>
-          </>
-        ) : (
-          <>
-            <button
-              className="btn btn-outline"
-              onClick={() => setModal("login")}
-              style={{ cursor: "pointer" }}
-            >
-              {t("nav_login")}
-            </button>
-            <button
-              className="btn btn-primary"
-              onClick={() => setModal("register")}
-              style={{ cursor: "pointer" }}
-            >
-              {t("nav_register")}
-            </button>
-          </>
-        )}
-      </div>
-    </nav>
-
-    {/* Auth modals */}
-    {modal === "login" && (
-      <LoginModal onClose={closeModal} onSwitchToRegister={() => setModal("register")} />
-    )}
-    {modal === "register" && (
-      <RegisterModal onClose={closeModal} onSwitchToLogin={() => setModal("login")} />
-    )}
+      {/* Auth modals */}
+      {modal === "login" && (
+        <LoginModal
+          onClose={closeModal}
+          onSwitchToRegister={() => setModal("register")}
+        />
+      )}
+      {modal === "register" && (
+        <RegisterModal
+          onClose={closeModal}
+          onSwitchToLogin={() => setModal("login")}
+        />
+      )}
     </>
   );
 };
