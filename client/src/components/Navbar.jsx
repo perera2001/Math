@@ -9,10 +9,10 @@ const StudentNavbar = ({ user, onLogout, t, uiLang, switchLang }) => {
   const initial = user?.name?.charAt(0).toUpperCase() || "?";
 
   const navItems = [
-    { path: "/student/dashboard",   icon: "⊞",  label: t("nav_dashboard") },
-    { path: "/student/quiz/setup",  icon: "▶",  label: "Play Quiz" },
+    { path: "/student/dashboard", icon: "⊞", label: t("nav_dashboard") },
+    { path: "/student/quiz/setup", icon: "▶", label: "Play Quiz" },
     { path: "/student/leaderboard", icon: "🏆", label: "Leaderboard" },
-    { path: "/student/profile",     icon: "👤", label: t("nav_profile") },
+    { path: "/student/profile", icon: "👤", label: t("nav_profile") },
   ];
 
   return (
@@ -40,7 +40,11 @@ const StudentNavbar = ({ user, onLogout, t, uiLang, switchLang }) => {
       {/* Right side: lang + user + logout */}
       <div className="snav-right">
         <div className="snav-lang">
-          {[["en", "EN"], ["si", "සිං"], ["ta", "த"]].map(([code, label]) => (
+          {[
+            ["en", "EN"],
+            ["si", "සිං"],
+            ["ta", "த"],
+          ].map(([code, label]) => (
             <button
               key={code}
               onClick={() => switchLang(code)}
@@ -60,9 +64,14 @@ const StudentNavbar = ({ user, onLogout, t, uiLang, switchLang }) => {
 
         <button onClick={onLogout} className="snav-logout">
           <svg
-            width="13" height="13" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" strokeWidth="2.5"
-            strokeLinecap="round" strokeLinejoin="round"
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           >
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
             <polyline points="16 17 21 12 16 7" />

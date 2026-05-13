@@ -4,10 +4,10 @@ import { useAuth } from "../context/AuthContext";
 import { useUILang } from "../context/UILanguageContext";
 
 const SUBJECTS = [
-  { key: "all",      label: "All Subjects", icon: "🌐", accent: "teal"  },
-  { key: "Geometry", label: "Geometry",     icon: "📐", accent: "blue"  },
-  { key: "Algebra",  label: "Algebra",      icon: "🔢", accent: "cyan"  },
-  { key: "Numbers",  label: "Numbers",      icon: "🔣", accent: "pink"  },
+  { key: "all", label: "All Subjects", icon: "🌐", accent: "teal" },
+  { key: "Geometry", label: "Geometry", icon: "📐", accent: "blue" },
+  { key: "Algebra", label: "Algebra", icon: "🔢", accent: "cyan" },
+  { key: "Numbers", label: "Numbers", icon: "🔣", accent: "pink" },
 ];
 
 const MEDAL = { 1: "🥇", 2: "🥈", 3: "🥉" };
@@ -17,9 +17,9 @@ export default function Leaderboard() {
   const { t } = useUILang();
 
   const [activeSubject, setActiveSubject] = useState("all");
-  const [entries, setEntries]             = useState([]);
-  const [loading, setLoading]             = useState(true);
-  const [error, setError]                 = useState(null);
+  const [entries, setEntries] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const fetchLeaderboard = useCallback(async (subject) => {
     setLoading(true);
@@ -51,22 +51,23 @@ export default function Leaderboard() {
   };
 
   const getSecondStat = (entry) => {
-    if (activeSubject === "all") return entry.totalScore?.toLocaleString() ?? "0";
+    if (activeSubject === "all")
+      return entry.totalScore?.toLocaleString() ?? "0";
     return `${entry.lessonPlayed ?? 0} played`;
   };
 
   return (
     <div className="sd-page lb-page">
       <div className="lb-layout">
-
         {/* ══ LEFT — leaderboard ═════════════════════════════════════ */}
         <div className="lb-main">
-
           {/* Header */}
           <div className="sd-header">
             <div className="sd-welcome-text">
               <h1>🏆 Leaderboard</h1>
-              <p className="sd-header-sub">See how you rank against other students</p>
+              <p className="sd-header-sub">
+                See how you rank against other students
+              </p>
             </div>
           </div>
 
@@ -85,13 +86,19 @@ export default function Leaderboard() {
           </div>
 
           {/* Rankings card */}
-          <div className={`sd-card sd-accent-${activeConfig?.accent ?? "teal"} lb-card`}>
+          <div
+            className={`sd-card sd-accent-${activeConfig?.accent ?? "teal"} lb-card`}
+          >
             <div className="sd-card-header">
-              <div className={`sd-card-header-icon sd-icon-${activeConfig?.accent ?? "teal"}`}>
+              <div
+                className={`sd-card-header-icon sd-icon-${activeConfig?.accent ?? "teal"}`}
+              >
                 {activeConfig?.icon}
               </div>
               <div>
-                <div className="sd-card-title">{activeConfig?.label} Rankings</div>
+                <div className="sd-card-title">
+                  {activeConfig?.label} Rankings
+                </div>
                 <div className="sd-card-subtitle">
                   {activeSubject === "all"
                     ? "Ranked by total stars earned"
@@ -111,7 +118,10 @@ export default function Leaderboard() {
               {!loading && error && (
                 <div className="lb-state lb-state--error">
                   <span>⚠ {error}</span>
-                  <button className="lb-retry-btn" onClick={() => fetchLeaderboard(activeSubject)}>
+                  <button
+                    className="lb-retry-btn"
+                    onClick={() => fetchLeaderboard(activeSubject)}
+                  >
                     Retry
                   </button>
                 </div>
@@ -136,17 +146,22 @@ export default function Leaderboard() {
                   </div>
 
                   {entries.map((entry) => {
-                    const isMe = String(entry.userId) === String(user?._id || user?.id);
+                    const isMe =
+                      String(entry.userId) === String(user?._id || user?.id);
                     return (
                       <div
                         key={entry.userId}
                         className={`lb-row${isMe ? " lb-row--me" : ""}${entry.rank <= 3 ? " lb-row--top3" : ""}`}
                       >
                         <span className="lb-col lb-col-rank">
-                          {MEDAL[entry.rank] || <span className="lb-rank-num">{entry.rank}</span>}
+                          {MEDAL[entry.rank] || (
+                            <span className="lb-rank-num">{entry.rank}</span>
+                          )}
                         </span>
                         <span className="lb-col lb-col-user">
-                          <span className={`lb-avatar lb-avatar--${activeConfig?.accent ?? "teal"}`}>
+                          <span
+                            className={`lb-avatar lb-avatar--${activeConfig?.accent ?? "teal"}`}
+                          >
                             {entry.userName?.charAt(0).toUpperCase() || "?"}
                           </span>
                           <span className="lb-username">
@@ -155,7 +170,8 @@ export default function Leaderboard() {
                           </span>
                         </span>
                         <span className="lb-col lb-col-stars lb-stat-primary">
-                          {getDisplayStat(entry)}<span className="lb-star-icon">★</span>
+                          {getDisplayStat(entry)}
+                          <span className="lb-star-icon">★</span>
                         </span>
                         <span className="lb-col lb-col-score lb-stat-secondary">
                           {getSecondStat(entry)}
@@ -254,7 +270,6 @@ export default function Leaderboard() {
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );

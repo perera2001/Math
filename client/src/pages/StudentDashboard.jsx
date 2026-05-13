@@ -336,8 +336,17 @@ const TopicBars = ({ byLesson, history, tr }) => {
               <span style={{ fontWeight: 700, fontSize: "0.9rem" }}>
                 {lesson}
               </span>
-              <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginLeft: "0.25rem" }}>
-                {played}{" "}{played !== 1 ? tr("dash_quizzes_label_pl") : tr("dash_quizzes_label")}
+              <span
+                style={{
+                  fontSize: "0.78rem",
+                  color: "var(--text-muted)",
+                  marginLeft: "0.25rem",
+                }}
+              >
+                {played}{" "}
+                {played !== 1
+                  ? tr("dash_quizzes_label_pl")
+                  : tr("dash_quizzes_label")}
               </span>
             </div>
             {/* Row 2: stats chips */}
@@ -349,20 +358,36 @@ const TopicBars = ({ byLesson, history, tr }) => {
                 flexWrap: "wrap",
               }}
             >
-              <span style={{
-                display: "inline-flex", alignItems: "center", gap: "0.25rem",
-                background: "rgba(251,191,36,0.12)", border: "1px solid rgba(251,191,36,0.3)",
-                borderRadius: "6px", padding: "0.15rem 0.55rem",
-                fontSize: "0.76rem", color: "#92400e", fontWeight: 600,
-              }}>
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.25rem",
+                  background: "rgba(251,191,36,0.12)",
+                  border: "1px solid rgba(251,191,36,0.3)",
+                  borderRadius: "6px",
+                  padding: "0.15rem 0.55rem",
+                  fontSize: "0.76rem",
+                  color: "#92400e",
+                  fontWeight: 600,
+                }}
+              >
                 ⭐ <strong>{avgStars}</strong>&nbsp;avg stars
               </span>
-              <span style={{
-                display: "inline-flex", alignItems: "center", gap: "0.25rem",
-                background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.3)",
-                borderRadius: "6px", padding: "0.15rem 0.55rem",
-                fontSize: "0.76rem", color: "#166534", fontWeight: 600,
-              }}>
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.25rem",
+                  background: "rgba(34,197,94,0.1)",
+                  border: "1px solid rgba(34,197,94,0.3)",
+                  borderRadius: "6px",
+                  padding: "0.15rem 0.55rem",
+                  fontSize: "0.76rem",
+                  color: "#166534",
+                  fontWeight: 600,
+                }}
+              >
                 ✓ <strong>{avgCorrect}/8</strong>&nbsp;avg correct
               </span>
             </div>

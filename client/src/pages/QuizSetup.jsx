@@ -5,31 +5,64 @@ import { useQuiz } from "../context/QuizContext";
 import { useUILang } from "../context/UILanguageContext";
 
 const LESSONS = [
-  { value: "Geometry", icon: "📐", key: "setup_lesson_geometry", color: "#3b82f6", bg: "#dbeafe" },
-  { value: "Algebra",  icon: "🔣", key: "setup_lesson_algebra",  color: "#8b5cf6", bg: "#ede9fe" },
-  { value: "Numbers",  icon: "🔢", key: "setup_lesson_numbers",  color: "#14b8a6", bg: "#ccfbf1" },
+  {
+    value: "Geometry",
+    icon: "📐",
+    key: "setup_lesson_geometry",
+    color: "#3b82f6",
+    bg: "#dbeafe",
+  },
+  {
+    value: "Algebra",
+    icon: "🔣",
+    key: "setup_lesson_algebra",
+    color: "#8b5cf6",
+    bg: "#ede9fe",
+  },
+  {
+    value: "Numbers",
+    icon: "🔢",
+    key: "setup_lesson_numbers",
+    color: "#14b8a6",
+    bg: "#ccfbf1",
+  },
 ];
 
 const DIFFICULTIES = [
-  { value: "Easy",   color: "#10B981", bg: "#d1fae5", icon: "🟢" },
+  { value: "Easy", color: "#10B981", bg: "#d1fae5", icon: "🟢" },
   { value: "Medium", color: "#F59E0B", bg: "#fef3c7", icon: "🟡" },
-  { value: "Hard",   color: "#EF4444", bg: "#fee2e2", icon: "🔴" },
+  { value: "Hard", color: "#EF4444", bg: "#fee2e2", icon: "🔴" },
 ];
 
 const TIME_MODES = [
-  { value: "8min",      icon: "⚡", labelKey: "setup_time_8min",      subKey: "setup_time_8min_sub" },
-  { value: "16min",     icon: "⚖️", labelKey: "setup_time_16min",     subKey: "setup_time_16min_sub" },
-  { value: "unlimited", icon: "🐢", labelKey: "setup_time_unlimited", subKey: "setup_time_unlimited_sub" },
+  {
+    value: "8min",
+    icon: "⚡",
+    labelKey: "setup_time_8min",
+    subKey: "setup_time_8min_sub",
+  },
+  {
+    value: "16min",
+    icon: "⚖️",
+    labelKey: "setup_time_16min",
+    subKey: "setup_time_16min_sub",
+  },
+  {
+    value: "unlimited",
+    icon: "🐢",
+    labelKey: "setup_time_unlimited",
+    subKey: "setup_time_unlimited_sub",
+  },
 ];
 
 const LANGUAGES = [
   { value: "en", badge: "EN", label: "English", sub: "English" },
-  { value: "si", badge: "සි", label: "සිංහල",   sub: "Sinhala" },
-  { value: "ta", badge: "த",  label: "தமிழ்",   sub: "Tamil"   },
+  { value: "si", badge: "සි", label: "සිංහල", sub: "Sinhala" },
+  { value: "ta", badge: "த", label: "தமிழ்", sub: "Tamil" },
 ];
 
 const GRADE_META = {
-  9:  { emoji: "📐", desc: "Foundations of secondary math" },
+  9: { emoji: "📐", desc: "Foundations of secondary math" },
   10: { emoji: "📊", desc: "Intermediate concepts & algebra" },
   11: { emoji: "🔢", desc: "Advanced topics & exam prep" },
 };
@@ -56,11 +89,20 @@ const QuizSetup = () => {
     setError("");
     setLoading(true);
     try {
-      const res = await quizAPI.start({ grade, lesson, difficulty, timeMode, language });
+      const res = await quizAPI.start({
+        grade,
+        lesson,
+        difficulty,
+        timeMode,
+        language,
+      });
       initSession(res.data, { grade, lesson, difficulty, timeMode, language });
       navigate(`/student/quiz/play/${res.data.sessionId}`);
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to start quiz. Please try again.");
+      setError(
+        err.response?.data?.message ||
+          "Failed to start quiz. Please try again.",
+      );
     } finally {
       setLoading(false);
     }
@@ -71,7 +113,6 @@ const QuizSetup = () => {
 
   return (
     <div className="sd-page qs-page">
-
       {/* ── Header ───────────────────────────────────────────────── */}
       <div className="sd-header">
         <div className="sd-welcome-text">
@@ -99,12 +140,15 @@ const QuizSetup = () => {
       {/* ── Progress pills ──────────────────────────────────────── */}
       <div className="qs-progress">
         {[
-          { label: "Lesson",     done: !!lesson,     value: lesson },
+          { label: "Lesson", done: !!lesson, value: lesson },
           { label: "Difficulty", done: !!difficulty, value: difficulty },
-          { label: "Time Mode",  done: !!timeMode,   value: timeMode },
-          { label: "Language",   done: true,         value: language.toUpperCase() },
+          { label: "Time Mode", done: !!timeMode, value: timeMode },
+          { label: "Language", done: true, value: language.toUpperCase() },
         ].map((step) => (
-          <div key={step.label} className={`qs-pill${step.done ? " done" : ""}`}>
+          <div
+            key={step.label}
+            className={`qs-pill${step.done ? " done" : ""}`}
+          >
             <span className="qs-pill-check">{step.done ? "✓" : "○"}</span>
             <span className="qs-pill-label">{step.label}</span>
             {step.done && step.value && (
@@ -116,14 +160,15 @@ const QuizSetup = () => {
 
       {/* ── Main Grid ───────────────────────────────────────────── */}
       <div className="qs-grid">
-
         {/* ① Lesson — cols 1-2, rows 1-2 (large teal) */}
         <div className="sd-card sd-accent-teal qs-area-lesson">
           <div className="sd-card-header">
             <div className="sd-card-header-icon sd-icon-teal">📚</div>
             <div>
               <div className="sd-card-title">{t("setup_lesson")}</div>
-              <div className="sd-card-subtitle">Choose a subject to practise</div>
+              <div className="sd-card-subtitle">
+                Choose a subject to practise
+              </div>
             </div>
           </div>
           <div className="sd-card-body qs-lesson-body">
@@ -148,7 +193,9 @@ const QuizSetup = () => {
                   />
                 </div>
                 {lesson === value && (
-                  <span className="qs-lesson-check" style={{ color }}>✓</span>
+                  <span className="qs-lesson-check" style={{ color }}>
+                    ✓
+                  </span>
                 )}
               </button>
             ))}
@@ -178,7 +225,9 @@ const QuizSetup = () => {
               >
                 <span>{icon}</span>
                 <span className="qs-diff-label">{value}</span>
-                {difficulty === value && <span className="qs-diff-tick">✓</span>}
+                {difficulty === value && (
+                  <span className="qs-diff-tick">✓</span>
+                )}
               </button>
             ))}
           </div>
@@ -230,22 +279,17 @@ const QuizSetup = () => {
                 <span className="qs-lang-badge">{badge}</span>
                 <div className="qs-lang-info">
                   <span className="qs-lang-name">{label}</span>
-                  {sub !== label && (
-                    <span className="qs-lang-sub">{sub}</span>
-                  )}
+                  {sub !== label && <span className="qs-lang-sub">{sub}</span>}
                 </div>
                 {language === value && <span className="qs-lang-check">✓</span>}
               </button>
             ))}
           </div>
         </div>
-
       </div>
 
       {/* ── Error + Bottom Start ─────────────────────────────────── */}
-      {error && (
-        <div className="qs-error">{error}</div>
-      )}
+      {error && <div className="qs-error">{error}</div>}
 
       <div className="qs-start-btn-wrap">
         <button
@@ -254,13 +298,14 @@ const QuizSetup = () => {
           disabled={!canStart}
         >
           {loading ? (
-            <><span className="qs-fab-spinner" /> {t("setup_loading")}</>
+            <>
+              <span className="qs-fab-spinner" /> {t("setup_loading")}
+            </>
           ) : (
             <>&#9654; {t("setup_start")}</>
           )}
         </button>
       </div>
-
     </div>
   );
 };

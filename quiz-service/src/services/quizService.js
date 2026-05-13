@@ -218,7 +218,12 @@ const useLifeline = async ({ sessionId, type, userId }) => {
 };
 
 // ── completeQuiz ─────────────────────────────────────────────────────────────
-const completeQuiz = async ({ sessionId, timeSpentTotal, userId, userName }) => {
+const completeQuiz = async ({
+  sessionId,
+  timeSpentTotal,
+  userId,
+  userName,
+}) => {
   const session = await QuizSession.findById(sessionId);
 
   if (!session || session.userId.toString() !== String(userId)) {
@@ -445,29 +450,26 @@ function _calculateStars(session, timeSpentTotal, correctCount) {
 
 // ── getLeaderboard ──────────────────────────────────────────────────────────
 const getLeaderboard = async ({ lesson } = {}) => {
-  const VALID_LESSONS = ['Geometry', 'Algebra', 'Numbers'];
+  const VALID_LESSONS = ["Geometry", "Algebra", "Numbers"];
   const isLesson = lesson && VALID_LESSONS.includes(lesson);
 
   const sortField = isLesson
     ? { [`byLesson.${lesson}.stars`]: -1, [`byLesson.${lesson}.played`]: -1 }
     : { totalStars: -1, totalScore: -1 };
 
-  const entries = await UserStats.find()
-    .sort(sortField)
-    .limit(50)
-    .lean();
+  const entries = await UserStats.find().sort(sortField).limit(50).lean();
 
   return entries.map((entry, idx) => ({
     rank: idx + 1,
     userId: entry.userId,
-    userName: entry.userName || 'Anonymous',
+    userName: entry.userName || "Anonymous",
     totalStars: entry.totalStars,
     totalScore: entry.totalScore,
     totalQuizzes: entry.totalQuizzes,
     perfectQuizzes: entry.perfectQuizzes,
     bestStreak: entry.bestStreak,
-    lessonStars: isLesson ? entry.byLesson?.[lesson]?.stars ?? 0 : null,
-    lessonPlayed: isLesson ? entry.byLesson?.[lesson]?.played ?? 0 : null,
+    lessonStars: isLesson ? (entry.byLesson?.[lesson]?.stars ?? 0) : null,
+    lessonPlayed: isLesson ? (entry.byLesson?.[lesson]?.played ?? 0) : null,
     byLesson: entry.byLesson,
   }));
 };
