@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useUILang } from "../context/UILanguageContext";
+import { LoginModal, RegisterModal } from "./AuthModals";
 
 /* ── Student-specific top navigation bar ─────────────────────────── */
 const StudentNavbar = ({ user, onLogout, t, uiLang, switchLang }) => {
@@ -89,11 +90,14 @@ const Navbar = () => {
   const { user, logout } = useAuth();
   const { uiLang, switchLang, t } = useUILang();
   const navigate = useNavigate();
+  const [modal, setModal] = useState(null); // null | "login" | "register"
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
+    navigate("/");
   };
+
+  const closeModal = () => setModal(null);
 
   /* Render student navbar for USER role */
   if (user?.role === "USER") {
@@ -140,6 +144,7 @@ const Navbar = () => {
   );
 
   return (
+    <>
     <nav className="navbar">
       <div className="navbar-brand">{t("nav_brand")}</div>
 
@@ -165,12 +170,33 @@ const Navbar = () => {
           </>
         ) : (
           <>
-            <Link to="/login">{t("nav_login")}</Link>
-            <Link to="/register">{t("nav_register")}</Link>
+            <button
+              className="btn btn-outline"
+              onClick={() => setModal("login")}
+              style={{ cursor: "pointer" }}
+            >
+              {t("nav_login")}
+            </button>
+            <button
+              className="btn btn-primary"
+              onClick={() => setModal("register")}
+              style={{ cursor: "pointer" }}
+            >
+              {t("nav_register")}
+            </button>
           </>
         )}
       </div>
     </nav>
+
+    {/* Auth modals */}
+    {modal === "login" && (
+      <LoginModal onClose={closeModal} onSwitchToRegister={() => setModal("register")} />
+    )}
+    {modal === "register" && (
+      <RegisterModal onClose={closeModal} onSwitchToLogin={() => setModal("login")} />
+    )}
+    </>
   );
 };
 
