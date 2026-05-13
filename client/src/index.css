@@ -2982,10 +2982,13 @@ body {
 /* ── Hero card body ─────────────────────────────────────────────── */
 .sp-hero-body {
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: 1.75rem;
   flex-wrap: wrap;
   padding-bottom: 1.25rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .sp-hero-avatar {
