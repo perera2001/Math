@@ -9,6 +9,7 @@ const {
   stats,
   result,
   explainAnswer,
+  leaderboard,
 } = require("../controllers/quizController");
 
 const router = express.Router();
@@ -23,6 +24,7 @@ router.post("/complete", complete);
 router.post("/explain-answer", explainAnswer);
 router.get("/history", history);
 router.get("/stats", stats);
+router.get("/leaderboard", leaderboard);
 router.get("/result/:sessionId", result);
 
 module.exports = router;

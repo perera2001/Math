@@ -5,15 +5,33 @@ import { useQuiz } from "../context/QuizContext";
 import { useUILang } from "../context/UILanguageContext";
 
 const LESSONS = [
-  { value: "Geometry", icon: "📐", key: "setup_lesson_geometry" },
-  { value: "Algebra", icon: "🔣", key: "setup_lesson_algebra" },
-  { value: "Numbers", icon: "🔢", key: "setup_lesson_numbers" },
+  {
+    value: "Geometry",
+    icon: "📐",
+    key: "setup_lesson_geometry",
+    color: "#3b82f6",
+    bg: "#dbeafe",
+  },
+  {
+    value: "Algebra",
+    icon: "🔣",
+    key: "setup_lesson_algebra",
+    color: "#8b5cf6",
+    bg: "#ede9fe",
+  },
+  {
+    value: "Numbers",
+    icon: "🔢",
+    key: "setup_lesson_numbers",
+    color: "#14b8a6",
+    bg: "#ccfbf1",
+  },
 ];
 
 const DIFFICULTIES = [
-  { value: "Easy", color: "#10B981", key: "setup_diff_easy" },
-  { value: "Medium", color: "#F59E0B", key: "setup_diff_medium" },
-  { value: "Hard", color: "#EF4444", key: "setup_diff_hard" },
+  { value: "Easy", color: "#10B981", bg: "#d1fae5", icon: "🟢" },
+  { value: "Medium", color: "#F59E0B", bg: "#fef3c7", icon: "🟡" },
+  { value: "Hard", color: "#EF4444", bg: "#fee2e2", icon: "🔴" },
 ];
 
 const TIME_MODES = [
@@ -42,6 +60,12 @@ const LANGUAGES = [
   { value: "si", badge: "සි", label: "සිංහල", sub: "Sinhala" },
   { value: "ta", badge: "த", label: "தமிழ்", sub: "Tamil" },
 ];
+
+const GRADE_META = {
+  9: { emoji: "📐", desc: "Foundations of secondary math" },
+  10: { emoji: "📊", desc: "Intermediate concepts & algebra" },
+  11: { emoji: "🔢", desc: "Advanced topics & exam prep" },
+};
 
 const QuizSetup = () => {
   const [searchParams] = useSearchParams();
@@ -84,227 +108,204 @@ const QuizSetup = () => {
     }
   };
 
-  const selectionStyle = (selected) => ({
-    border: selected ? "2px solid var(--primary)" : "2px solid var(--border)",
-    background: selected ? "rgba(67,97,238,0.06)" : "var(--white)",
-    borderRadius: "var(--radius)",
-    cursor: "pointer",
-    transition: "all 0.15s",
-    outline: "none",
-  });
+  const meta = GRADE_META[grade] || GRADE_META[9];
+  const canStart = !loading && !!lesson && !!difficulty && !!timeMode;
 
   return (
-    <div className="page-container" style={{ maxWidth: 680, margin: "0 auto" }}>
-      <div className="page-header">
-        <h1 className="page-title">
-          Grade {grade} — {t("setup_title")}
-        </h1>
-        <p className="page-subtitle">{t("setup_subtitle")}</p>
-      </div>
-
-      {/* Lesson selector */}
-      <div
-        className="card"
-        style={{ marginBottom: "1.2rem", padding: "1.4rem" }}
-      >
-        <h3 style={{ marginBottom: "1rem", fontWeight: 600 }}>
-          {t("setup_lesson")}
-        </h3>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: "0.8rem",
-          }}
-        >
-          {LESSONS.map(({ value, icon, key }) => (
-            <button
-              key={value}
-              onClick={() => setLesson(value)}
-              style={{
-                ...selectionStyle(lesson === value),
-                padding: "1.2rem",
-                textAlign: "center",
-                fontWeight: 600,
-                fontSize: "0.95rem",
-              }}
-            >
-              <div style={{ fontSize: "2rem", marginBottom: "0.3rem" }}>
-                {icon}
-              </div>
-              {t(key)}
-            </button>
-          ))}
+    <div className="sd-page qs-page">
+      {/* ── Header ───────────────────────────────────────────────── */}
+      <div className="sd-header">
+        <div className="sd-welcome-text">
+          <h1>
+            {meta.emoji} Grade {grade} — {t("setup_title")}
+          </h1>
+          <p>{t("setup_subtitle")}</p>
         </div>
-      </div>
-
-      {/* Difficulty selector */}
-      <div
-        className="card"
-        style={{ marginBottom: "1.2rem", padding: "1.4rem" }}
-      >
-        <h3 style={{ marginBottom: "1rem", fontWeight: 600 }}>
-          {t("setup_difficulty")}
-        </h3>
-        <div style={{ display: "flex", gap: "0.8rem" }}>
-          {DIFFICULTIES.map(({ value, color, key }) => (
-            <button
-              key={value}
-              onClick={() => setDifficulty(value)}
-              style={{
-                flex: 1,
-                padding: "0.7rem",
-                borderRadius: "20px",
-                border:
-                  difficulty === value
-                    ? `2px solid ${color}`
-                    : `2px solid ${color}40`,
-                background: difficulty === value ? `${color}18` : "transparent",
-                color: color,
-                fontWeight: 700,
-                fontSize: "0.95rem",
-                cursor: "pointer",
-                transition: "all 0.15s",
-              }}
-            >
-              {t(key)}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Time mode selector */}
-      <div
-        className="card"
-        style={{ marginBottom: "1.2rem", padding: "1.4rem" }}
-      >
-        <h3 style={{ marginBottom: "1rem", fontWeight: 600 }}>
-          {t("setup_time")}
-        </h3>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: "0.8rem",
-          }}
+        <button
+          className="qs-start-fab"
+          onClick={handleStart}
+          disabled={!canStart}
         >
-          {TIME_MODES.map(({ value, icon, labelKey, subKey }) => (
-            <button
-              key={value}
-              onClick={() => setTimeMode(value)}
-              style={{
-                ...selectionStyle(timeMode === value),
-                padding: "1.2rem 0.8rem",
-                textAlign: "center",
-              }}
-            >
-              <div style={{ fontSize: "2rem", marginBottom: "0.4rem" }}>
-                {icon}
+          {loading ? (
+            <span className="qs-fab-spinner" />
+          ) : (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="5,3 19,12 5,21" />
+            </svg>
+          )}
+          {loading ? t("setup_loading") : t("setup_start")}
+        </button>
+      </div>
+
+      {/* ── Progress pills ──────────────────────────────────────── */}
+      <div className="qs-progress">
+        {[
+          { label: "Lesson", done: !!lesson, value: lesson },
+          { label: "Difficulty", done: !!difficulty, value: difficulty },
+          { label: "Time Mode", done: !!timeMode, value: timeMode },
+          { label: "Language", done: true, value: language.toUpperCase() },
+        ].map((step) => (
+          <div
+            key={step.label}
+            className={`qs-pill${step.done ? " done" : ""}`}
+          >
+            <span className="qs-pill-check">{step.done ? "✓" : "○"}</span>
+            <span className="qs-pill-label">{step.label}</span>
+            {step.done && step.value && (
+              <span className="qs-pill-value">{step.value}</span>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* ── Main Grid ───────────────────────────────────────────── */}
+      <div className="qs-grid">
+        {/* ① Lesson — cols 1-2, rows 1-2 (large teal) */}
+        <div className="sd-card sd-accent-teal qs-area-lesson">
+          <div className="sd-card-header">
+            <div className="sd-card-header-icon sd-icon-teal">📚</div>
+            <div>
+              <div className="sd-card-title">{t("setup_lesson")}</div>
+              <div className="sd-card-subtitle">
+                Choose a subject to practise
               </div>
-              <div style={{ fontWeight: 700, fontSize: "0.95rem" }}>
-                {t(labelKey)}
-              </div>
-              <div
+            </div>
+          </div>
+          <div className="sd-card-body qs-lesson-body">
+            {LESSONS.map(({ value, icon, key, color, bg }) => (
+              <button
+                key={value}
+                className={`qs-lesson-btn${lesson === value ? " selected" : ""}`}
                 style={{
-                  fontSize: "0.75rem",
-                  color: "var(--text-muted)",
-                  marginTop: "0.2rem",
+                  "--lc": color,
+                  "--lb": bg,
+                  borderColor: lesson === value ? color : "var(--border)",
+                  background: lesson === value ? bg : "#fff",
                 }}
+                onClick={() => setLesson(value)}
               >
-                {t(subKey)}
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Language selector */}
-      <div
-        className="card"
-        style={{ marginBottom: "1.5rem", padding: "1.4rem" }}
-      >
-        <h3 style={{ marginBottom: "0.4rem", fontWeight: 600 }}>
-          {t("setup_language")}
-        </h3>
-        <p
-          style={{
-            fontSize: "0.82rem",
-            color: "var(--text-muted)",
-            marginBottom: "1rem",
-            marginTop: 0,
-          }}
-        >
-          {t("setup_language_hint")}
-        </p>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: "0.8rem",
-          }}
-        >
-          {LANGUAGES.map(({ value, badge, label, sub }) => (
-            <button
-              key={value}
-              onClick={() => setLanguage(value)}
-              style={{
-                ...selectionStyle(language === value),
-                padding: "1.1rem 0.8rem",
-                textAlign: "center",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: "1.4rem",
-                  fontWeight: 800,
-                  marginBottom: "0.35rem",
-                  color: language === value ? "var(--primary)" : "var(--text)",
-                }}
-              >
-                {badge}
-              </div>
-              <div style={{ fontWeight: 700, fontSize: "0.95rem" }}>
-                {label}
-              </div>
-              {sub !== label && (
-                <div
-                  style={{
-                    fontSize: "0.72rem",
-                    color: "var(--text-muted)",
-                    marginTop: "0.15rem",
-                  }}
-                >
-                  {sub}
+                <span className="qs-lesson-icon">{icon}</span>
+                <div className="qs-lesson-info">
+                  <span className="qs-lesson-name">{t(key)}</span>
+                  <span
+                    className="qs-lesson-dot"
+                    style={{ background: color }}
+                  />
                 </div>
-              )}
-            </button>
-          ))}
+                {lesson === value && (
+                  <span className="qs-lesson-check" style={{ color }}>
+                    ✓
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ② Difficulty — col 3-4, row 1 (blue) */}
+        <div className="sd-card sd-accent-blue qs-area-diff">
+          <div className="sd-card-header">
+            <div className="sd-card-header-icon sd-icon-blue">🎯</div>
+            <div>
+              <div className="sd-card-title">{t("setup_difficulty")}</div>
+              <div className="sd-card-subtitle">Pick your challenge level</div>
+            </div>
+          </div>
+          <div className="sd-card-body qs-diff-body">
+            {DIFFICULTIES.map(({ value, color, bg, icon }) => (
+              <button
+                key={value}
+                className={`qs-diff-btn${difficulty === value ? " selected" : ""}`}
+                style={{
+                  borderColor: difficulty === value ? color : `${color}40`,
+                  background: difficulty === value ? bg : "transparent",
+                  color: color,
+                }}
+                onClick={() => setDifficulty(value)}
+              >
+                <span>{icon}</span>
+                <span className="qs-diff-label">{value}</span>
+                {difficulty === value && (
+                  <span className="qs-diff-tick">✓</span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ③ Time Mode — col 3-4, row 2 (terracotta) */}
+        <div className="sd-card sd-accent-terra qs-area-time">
+          <div className="sd-card-header">
+            <div className="sd-card-header-icon sd-icon-terra">⏱</div>
+            <div>
+              <div className="sd-card-title">{t("setup_time")}</div>
+              <div className="sd-card-subtitle">How long do you have?</div>
+            </div>
+          </div>
+          <div className="sd-card-body qs-time-body">
+            {TIME_MODES.map(({ value, icon, labelKey, subKey }) => (
+              <button
+                key={value}
+                className={`qs-time-btn${timeMode === value ? " selected" : ""}`}
+                onClick={() => setTimeMode(value)}
+              >
+                <span className="qs-time-icon">{icon}</span>
+                <div className="qs-time-info">
+                  <span className="qs-time-name">{t(labelKey)}</span>
+                  <span className="qs-time-sub">{t(subKey)}</span>
+                </div>
+                {timeMode === value && <span className="qs-time-check">✓</span>}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ④ Language — cols 1-4, row 3 (pink) */}
+        <div className="sd-card sd-accent-pink qs-area-lang">
+          <div className="sd-card-header">
+            <div className="sd-card-header-icon sd-icon-pink">🌐</div>
+            <div>
+              <div className="sd-card-title">{t("setup_language")}</div>
+              <div className="sd-card-subtitle">{t("setup_language_hint")}</div>
+            </div>
+          </div>
+          <div className="sd-card-body qs-lang-body">
+            {LANGUAGES.map(({ value, badge, label, sub }) => (
+              <button
+                key={value}
+                className={`qs-lang-btn${language === value ? " selected" : ""}`}
+                onClick={() => setLanguage(value)}
+              >
+                <span className="qs-lang-badge">{badge}</span>
+                <div className="qs-lang-info">
+                  <span className="qs-lang-name">{label}</span>
+                  {sub !== label && <span className="qs-lang-sub">{sub}</span>}
+                </div>
+                {language === value && <span className="qs-lang-check">✓</span>}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {error && (
-        <div
-          style={{
-            background: "#fee2e2",
-            color: "#dc2626",
-            padding: "0.75rem 1rem",
-            borderRadius: "8px",
-            marginBottom: "1rem",
-            fontSize: "0.9rem",
-          }}
-        >
-          {error}
-        </div>
-      )}
+      {/* ── Error + Bottom Start ─────────────────────────────────── */}
+      {error && <div className="qs-error">{error}</div>}
 
-      <button
-        className="btn btn-primary"
-        onClick={handleStart}
-        disabled={loading || !lesson || !difficulty || !timeMode}
-        style={{ fontSize: "1rem", padding: "0.85rem" }}
-      >
-        {loading ? t("setup_loading") : t("setup_start")}
-      </button>
+      <div className="qs-start-btn-wrap">
+        <button
+          className="qs-start-btn"
+          onClick={handleStart}
+          disabled={!canStart}
+        >
+          {loading ? (
+            <>
+              <span className="qs-fab-spinner" /> {t("setup_loading")}
+            </>
+          ) : (
+            <>&#9654; {t("setup_start")}</>
+          )}
+        </button>
+      </div>
     </div>
   );
 };

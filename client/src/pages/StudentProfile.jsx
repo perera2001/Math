@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { userAPI } from "../services/api";
+import { quizAPI } from "../api/quizApi";
 import { useUILang } from "../context/UILanguageContext";
 
 const StudentProfile = () => {
@@ -11,6 +12,7 @@ const StudentProfile = () => {
 
   const [profile, setProfile] = useState(null);
   const [loadError, setLoadError] = useState("");
+  const [stats, setStats] = useState(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -27,28 +29,38 @@ const StudentProfile = () => {
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
 
-  // ── Load profile ──────────────────────────────────────────────────────────
+  // ── Load profile + stats ──────────────────────────────────────────────────
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await userAPI.getProfile();
-        const data = res.data.user;
-        setProfile(data);
-        setForm({
-          name: data.name,
-          email: data.email,
-          password: "",
-          confirmPassword: "",
-        });
+        const [profRes, statsRes] = await Promise.allSettled([
+          userAPI.getProfile(),
+          quizAPI.getStats(),
+        ]);
+        if (profRes.status === "fulfilled") {
+          const data = profRes.value.data.user;
+          setProfile(data);
+          setForm({
+            name: data.name,
+            email: data.email,
+            password: "",
+            confirmPassword: "",
+          });
+        } else {
+          setLoadError("Failed to load profile. Please try again.");
+          setProfile(user);
+          setForm({
+            name: user.name,
+            email: user.email,
+            password: "",
+            confirmPassword: "",
+          });
+        }
+        if (statsRes.status === "fulfilled") {
+          setStats(statsRes.value.data.stats);
+        }
       } catch {
         setLoadError("Failed to load profile. Please try again.");
-        setProfile(user);
-        setForm({
-          name: user.name,
-          email: user.email,
-          password: "",
-          confirmPassword: "",
-        });
       }
     };
     load();
@@ -56,13 +68,11 @@ const StudentProfile = () => {
 
   const handleChange = (e) =>
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-
   const handleEdit = () => {
     setSaveError("");
     setSaveSuccess("");
     setEditing(true);
   };
-
   const handleCancel = () => {
     setForm({
       name: profile.name,
@@ -78,22 +88,17 @@ const StudentProfile = () => {
     e.preventDefault();
     setSaveError("");
     setSaveSuccess("");
-
-    if (form.password && form.password !== form.confirmPassword) {
+    if (form.password && form.password !== form.confirmPassword)
       return setSaveError("Passwords do not match");
-    }
-    if (form.password && form.password.length < 6) {
+    if (form.password && form.password.length < 6)
       return setSaveError("Password must be at least 6 characters");
-    }
 
     const payload = {};
     if (form.name !== profile.name) payload.name = form.name;
     if (form.email !== profile.email) payload.email = form.email;
     if (form.password) payload.password = form.password;
-
-    if (Object.keys(payload).length === 0) {
+    if (Object.keys(payload).length === 0)
       return setSaveError("No changes detected");
-    }
 
     setSaving(true);
     try {
@@ -135,86 +140,183 @@ const StudentProfile = () => {
   const data = profile || user;
   const initial = data?.name?.charAt(0).toUpperCase() || "?";
 
+  const statChips = [
+    {
+      icon: "⭐",
+      label: "Total Stars",
+      value: stats?.totalStars ?? "—",
+      accent: "sp-chip-gold",
+    },
+    {
+      icon: "🎯",
+      label: "Quizzes Played",
+      value: stats?.totalQuizzes ?? "—",
+      accent: "sp-chip-blue",
+    },
+    {
+      icon: "💯",
+      label: "Total Score",
+      value: stats?.totalScore ?? "—",
+      accent: "sp-chip-cyan",
+    },
+    {
+      icon: "🏆",
+      label: "Perfect Quizzes",
+      value: stats?.perfectQuizzes ?? "—",
+      accent: "sp-chip-terra",
+    },
+    {
+      icon: "🔥",
+      label: "Best Streak",
+      value: stats?.bestStreak ?? "—",
+      accent: "sp-chip-fire",
+    },
+  ];
+
+  const lessonCards = [
+    {
+      key: "Geometry",
+      icon: "📐",
+      accent: "sd-accent-blue",
+      iconCls: "sd-icon-blue",
+    },
+    {
+      key: "Algebra",
+      icon: "🔢",
+      accent: "sd-accent-cyan",
+      iconCls: "sd-icon-cyan",
+    },
+    {
+      key: "Numbers",
+      icon: "🔣",
+      accent: "sd-accent-pink",
+      iconCls: "sd-icon-pink",
+    },
+  ];
+
   return (
-    <div className="profile-page">
-      {/* ── Header ─────────────────────────────────────────────────────── */}
-      <div className="profile-page-header">
-        <button className="btn-back" onClick={() => navigate("/dashboard")}>
-          {t("profile_back")}
-        </button>
-        <h2>{t("profile_title")}</h2>
+    <div className="sd-page sp-page">
+      {/* ── Page header ─────────────────────────────────────────────── */}
+      <div className="sd-header">
+        <div className="sd-welcome-text">
+          <h1>👤 My Profile</h1>
+          <p>Manage your account and track your performance</p>
+        </div>
       </div>
 
-      <div className="profile-page-body">
-        {loadError && <div className="alert alert-error">{loadError}</div>}
+      {loadError && <div className="sp-alert sp-alert-error">{loadError}</div>}
 
-        {/* ── Hero Card ───────────────────────────────────────────────── */}
-        <div className="profile-hero-card">
-          <div className="profile-hero-avatar">{initial}</div>
-          <div className="profile-hero-info">
-            <h3>{data?.name}</h3>
-            <p>{data?.email}</p>
-            <div style={{ marginTop: "0.5rem" }}>
-              <span className="role-badge role-user">
-                {t("profile_student")}
-              </span>
+      {/* ── Main grid ───────────────────────────────────────────────── */}
+      <div className="sp-grid">
+        {/* ─── HERO card ─────────────────────────────────────── [hero] */}
+        <div className="sd-card sd-accent-teal sp-area-hero">
+          <div className="sd-card-body sp-hero-body">
+            <div className="sp-hero-avatar">
+              {initial}
+              <div className="sp-hero-avatar-ring" />
+            </div>
+            <div className="sp-hero-info">
+              <h2 className="sp-hero-name">{data?.name}</h2>
+              <p className="sp-hero-email">{data?.email}</p>
+              <div className="sp-hero-badges">
+                <span className="sp-badge sp-badge-student">🎓 Student</span>
+                {data?.grade && (
+                  <span className="sp-badge sp-badge-grade">
+                    📚 Grade {data.grade}
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="sp-hero-meta">
+              <div className="sp-meta-item">
+                <span className="sp-meta-label">Member since</span>
+                <span className="sp-meta-value">
+                  {data?.createdAt
+                    ? new Date(data.createdAt).toLocaleDateString("en-GB", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })
+                    : "—"}
+                </span>
+              </div>
+              <div className="sp-meta-item">
+                <span className="sp-meta-label">Account type</span>
+                <span className="sp-meta-value">Free student</span>
+              </div>
             </div>
           </div>
-          <div className="profile-hero-meta">
-            <div className="meta-item">
-              <span className="meta-label">{t("profile_member_since")}</span>
-              <span>
-                {data?.createdAt
-                  ? new Date(data.createdAt).toLocaleDateString()
-                  : "—"}
-              </span>
-            </div>
+
+          {/* Quick-stat chips */}
+          <div className="sp-chip-bar">
+            {statChips.map(({ icon, label, value, accent }) => (
+              <div key={label} className={`sp-chip ${accent}`}>
+                <span className="sp-chip-icon">{icon}</span>
+                <span className="sp-chip-value">{value}</span>
+                <span className="sp-chip-label">{label}</span>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* ── Details / Edit Card ─────────────────────────────────────── */}
-        <div className="section">
-          <div className="section-header">
-            <h3>{t("profile_account_details")}</h3>
+        {/* ─── ACCOUNT DETAILS card ──────────────────────── [details] */}
+        <div className="sd-card sd-accent-blue sp-area-details">
+          <div className="sd-card-header">
+            <div className="sd-card-header-icon sd-icon-blue">✏️</div>
+            <div>
+              <div className="sd-card-title">Account Details</div>
+              <div className="sd-card-subtitle">
+                Update your name, email or password
+              </div>
+            </div>
             {!editing && (
-              <button className="btn btn-success" onClick={handleEdit}>
-                {t("profile_edit")}
+              <button className="sp-edit-btn" onClick={handleEdit}>
+                Edit
               </button>
             )}
           </div>
 
-          {saveSuccess && (
-            <div className="alert alert-success">{saveSuccess}</div>
-          )}
-          {saveError && <div className="alert alert-error">{saveError}</div>}
+          <div className="sd-card-body">
+            {saveSuccess && (
+              <div className="sp-alert sp-alert-success">{saveSuccess}</div>
+            )}
+            {saveError && (
+              <div className="sp-alert sp-alert-error">{saveError}</div>
+            )}
 
-          {!editing ? (
-            /* ── Read-only view ─────────────────────────────────────── */
-            <div className="profile-detail-grid">
-              <div className="profile-detail-item">
-                <span className="detail-label">{t("profile_full_name")}</span>
-                <span className="detail-value">{data?.name}</span>
+            {!editing ? (
+              <div className="sp-detail-list">
+                <div className="sp-detail-row">
+                  <span className="sp-detail-icon">👤</span>
+                  <div className="sp-detail-body">
+                    <span className="sp-detail-label">Full Name</span>
+                    <span className="sp-detail-value">{data?.name}</span>
+                  </div>
+                </div>
+                <div className="sp-detail-row">
+                  <span className="sp-detail-icon">📧</span>
+                  <div className="sp-detail-body">
+                    <span className="sp-detail-label">Email Address</span>
+                    <span className="sp-detail-value">{data?.email}</span>
+                  </div>
+                </div>
+                <div className="sp-detail-row">
+                  <span className="sp-detail-icon">🔑</span>
+                  <div className="sp-detail-body">
+                    <span className="sp-detail-label">Password</span>
+                    <span
+                      className="sp-detail-value"
+                      style={{ letterSpacing: "0.25em" }}
+                    >
+                      ••••••••
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div className="profile-detail-item">
-                <span className="detail-label">{t("profile_email")}</span>
-                <span className="detail-value">{data?.email}</span>
-              </div>
-              <div className="profile-detail-item">
-                <span className="detail-label">{t("profile_password")}</span>
-                <span
-                  className="detail-value"
-                  style={{ letterSpacing: "0.2em" }}
-                >
-                  ••••••••
-                </span>
-              </div>
-            </div>
-          ) : (
-            /* ── Edit form ──────────────────────────────────────────── */
-            <form onSubmit={handleSave} className="form-card">
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="name">{t("profile_full_name")}</label>
+            ) : (
+              <form onSubmit={handleSave} className="sp-form">
+                <div className="sp-form-group">
+                  <label htmlFor="name">Full Name</label>
                   <input
                     id="name"
                     type="text"
@@ -224,8 +326,8 @@ const StudentProfile = () => {
                     required
                   />
                 </div>
-                <div className="form-group">
-                  <label htmlFor="email">{t("profile_email")}</label>
+                <div className="sp-form-group">
+                  <label htmlFor="email">Email Address</label>
                   <input
                     id="email"
                     type="email"
@@ -235,125 +337,166 @@ const StudentProfile = () => {
                     required
                   />
                 </div>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="password">
-                    {t("profile_new_password")}{" "}
-                    <span style={{ color: "#9ca3af", fontWeight: 400 }}>
-                      ({t("profile_keep_current")})
-                    </span>
-                  </label>
-                  <input
-                    id="password"
-                    type="password"
-                    name="password"
-                    value={form.password}
-                    onChange={handleChange}
-                    placeholder={t("profile_new_password_ph")}
-                    autoComplete="new-password"
-                  />
+                <div className="sp-form-row">
+                  <div className="sp-form-group">
+                    <label htmlFor="password">
+                      New Password{" "}
+                      <span className="sp-label-muted">
+                        (leave blank to keep current)
+                      </span>
+                    </label>
+                    <input
+                      id="password"
+                      type="password"
+                      name="password"
+                      value={form.password}
+                      onChange={handleChange}
+                      placeholder="New password"
+                      autoComplete="new-password"
+                    />
+                  </div>
+                  <div className="sp-form-group">
+                    <label htmlFor="confirmPassword">Confirm Password</label>
+                    <input
+                      id="confirmPassword"
+                      type="password"
+                      name="confirmPassword"
+                      value={form.confirmPassword}
+                      onChange={handleChange}
+                      placeholder="Repeat new password"
+                      autoComplete="new-password"
+                    />
+                  </div>
                 </div>
-                <div className="form-group">
-                  <label htmlFor="confirmPassword">
-                    {t("profile_confirm_password")}
-                  </label>
-                  <input
-                    id="confirmPassword"
-                    type="password"
-                    name="confirmPassword"
-                    value={form.confirmPassword}
-                    onChange={handleChange}
-                    placeholder={t("profile_confirm_ph")}
-                    autoComplete="new-password"
-                  />
+                <div className="sp-form-actions">
+                  <button
+                    type="submit"
+                    className="sp-btn sp-btn-save"
+                    disabled={saving}
+                  >
+                    {saving ? "Saving…" : "Save Changes"}
+                  </button>
+                  <button
+                    type="button"
+                    className="sp-btn sp-btn-cancel"
+                    onClick={handleCancel}
+                    disabled={saving}
+                  >
+                    Cancel
+                  </button>
                 </div>
-              </div>
-
-              <div
-                style={{ display: "flex", gap: "0.75rem", marginTop: "0.5rem" }}
-              >
-                <button
-                  type="submit"
-                  className="btn btn-success"
-                  disabled={saving}
-                >
-                  {saving ? t("profile_saving") : t("profile_save")}
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-outline"
-                  onClick={handleCancel}
-                  disabled={saving}
-                >
-                  {t("profile_cancel")}
-                </button>
-              </div>
-            </form>
-          )}
+              </form>
+            )}
+          </div>
         </div>
 
-        {/* ── Danger Zone ─────────────────────────────────────────────── */}
-        <div
-          className="section"
-          style={{ borderTop: "2px solid #fee2e2", marginTop: "1.5rem" }}
-        >
-          <div className="section-header">
-            <h3 style={{ color: "#dc2626" }}>{t("profile_danger_zone")}</h3>
-          </div>
-          <p style={{ color: "#6b7280", marginBottom: "1rem" }}>
-            {t("profile_danger_desc")}
-          </p>
-
-          {deleteError && (
-            <div className="alert alert-error" style={{ marginBottom: "1rem" }}>
-              {deleteError}
+        {/* ─── SUBJECT STATS card ──────────────────────────── [stats] */}
+        <div className="sd-card sd-accent-cyan sp-area-stats">
+          <div className="sd-card-header">
+            <div className="sd-card-header-icon sd-icon-cyan">📊</div>
+            <div>
+              <div className="sd-card-title">Subject Performance</div>
+              <div className="sd-card-subtitle">Stars earned per topic</div>
             </div>
-          )}
+          </div>
+          <div className="sd-card-body">
+            {lessonCards.map(({ key, icon, accent, iconCls }) => {
+              const ls = stats?.byLesson?.[key];
+              const played = ls?.played ?? 0;
+              const stars = ls?.stars ?? 0;
+              const maxStars = played * 3 || 1;
+              const pct = Math.min(100, Math.round((stars / maxStars) * 100));
+              return (
+                <div key={key} className="sp-subject-row">
+                  <div className="sp-subject-icon-wrap">
+                    <span className={`sp-subject-icon ${iconCls}`}>{icon}</span>
+                  </div>
+                  <div className="sp-subject-body">
+                    <div className="sp-subject-top">
+                      <span className="sp-subject-name">{key}</span>
+                      <span className="sp-subject-played">
+                        {played} quiz{played !== 1 ? "zes" : ""}
+                      </span>
+                    </div>
+                    <div className="sp-bar-track">
+                      <div
+                        className={`sp-bar-fill ${accent.replace("sd-accent-", "sp-fill-")}`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <div className="sp-subject-stars">
+                      {[1, 2, 3].map((n) => (
+                        <span
+                          key={n}
+                          className={`sp-star${stars >= n ? " sp-star-on" : ""}`}
+                        >
+                          ★
+                        </span>
+                      ))}
+                      <span className="sp-star-count">{stars} stars</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
 
-          {!showDeleteConfirm ? (
-            <button
-              className="btn btn-danger"
-              onClick={() => {
-                setShowDeleteConfirm(true);
-                setDeleteError("");
-              }}
-            >
-              {t("profile_delete_btn")}
-            </button>
-          ) : (
-            <div
-              className="form-card"
-              style={{ background: "#fff5f5", border: "1px solid #fca5a5" }}
-            >
-              <p
-                style={{
-                  fontWeight: 600,
-                  color: "#dc2626",
-                  marginBottom: "1rem",
-                }}
-              >
-                {t("profile_delete_confirm_q")}
-              </p>
-              <div style={{ display: "flex", gap: "0.75rem" }}>
-                <button
-                  className="btn btn-danger"
-                  onClick={handleDelete}
-                  disabled={deleting}
-                >
-                  {deleting ? t("profile_deleting") : t("profile_delete_yes")}
-                </button>
-                <button
-                  className="btn btn-outline"
-                  onClick={() => setShowDeleteConfirm(false)}
-                  disabled={deleting}
-                >
-                  {t("profile_delete_cancel")}
-                </button>
+        {/* ─── DANGER ZONE card ──────────────────────────── [danger] */}
+        <div className="sd-card sp-area-danger sp-danger-card">
+          <div className="sd-card-header">
+            <div className="sd-card-header-icon sp-icon-danger">⚠️</div>
+            <div>
+              <div className="sd-card-title sp-danger-title">Danger Zone</div>
+              <div className="sd-card-subtitle">
+                Irreversible account actions
               </div>
             </div>
-          )}
+          </div>
+          <div className="sd-card-body">
+            <p className="sp-danger-desc">
+              Permanently delete your account and all associated quiz data. This
+              action cannot be undone.
+            </p>
+
+            {deleteError && (
+              <div className="sp-alert sp-alert-error">{deleteError}</div>
+            )}
+
+            {!showDeleteConfirm ? (
+              <button
+                className="sp-btn sp-btn-delete"
+                onClick={() => {
+                  setShowDeleteConfirm(true);
+                  setDeleteError("");
+                }}
+              >
+                🗑 Delete My Account
+              </button>
+            ) : (
+              <div className="sp-delete-confirm">
+                <p className="sp-delete-confirm-q">
+                  Are you absolutely sure? All your data will be lost.
+                </p>
+                <div className="sp-form-actions">
+                  <button
+                    className="sp-btn sp-btn-delete"
+                    onClick={handleDelete}
+                    disabled={deleting}
+                  >
+                    {deleting ? "Deleting…" : "Yes, Delete Account"}
+                  </button>
+                  <button
+                    className="sp-btn sp-btn-cancel"
+                    onClick={() => setShowDeleteConfirm(false)}
+                    disabled={deleting}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

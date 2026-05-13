@@ -40,4 +40,6 @@ export const quizAPI = {
   explainAnswer: (data) => quizApi.post("/quiz/explain-answer", data),
   getHistory: () => quizApi.get("/quiz/history"),
   getStats: () => quizApi.get("/quiz/stats"),
+  getLeaderboard: (lesson) =>
+    quizApi.get("/quiz/leaderboard", lesson ? { params: { lesson } } : {}),
 };

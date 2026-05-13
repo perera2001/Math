@@ -18,8 +18,10 @@ import StudentDashboard from "./pages/StudentDashboard";
 import QuizSetup from "./pages/QuizSetup";
 import QuizPlay from "./pages/QuizPlay";
 import QuizResults from "./pages/QuizResults";
+import Leaderboard from "./pages/Leaderboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
+import LandingPage from "./pages/LandingPage";
 
 const AppRoutes = () => {
   const { user, loading } = useAuth();
@@ -36,11 +38,11 @@ const AppRoutes = () => {
       <Routes>
         <Route
           path="/login"
-          element={user ? <Navigate to={defaultDash} replace /> : <Login />}
+          element={<Navigate to={user ? defaultDash : "/"} replace />}
         />
         <Route
           path="/register"
-          element={user ? <Navigate to={defaultDash} replace /> : <Register />}
+          element={<Navigate to={user ? defaultDash : "/"} replace />}
         />
         <Route
           path="/dashboard"
@@ -107,8 +109,18 @@ const AppRoutes = () => {
           }
         />
         <Route
+          path="/student/leaderboard"
+          element={
+            <ProtectedRoute allowedRoles={["USER"]}>
+              <Leaderboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/"
-          element={<Navigate to={user ? defaultDash : "/login"} replace />}
+          element={
+            user ? <Navigate to={defaultDash} replace /> : <LandingPage />
+          }
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
