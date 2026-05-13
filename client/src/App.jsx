@@ -18,6 +18,7 @@ import StudentDashboard from "./pages/StudentDashboard";
 import QuizSetup from "./pages/QuizSetup";
 import QuizPlay from "./pages/QuizPlay";
 import QuizResults from "./pages/QuizResults";
+import Leaderboard from "./pages/Leaderboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
 
@@ -103,6 +104,14 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute allowedRoles={["USER"]}>
               <QuizResults />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/student/leaderboard"
+          element={
+            <ProtectedRoute allowedRoles={["USER"]}>
+              <Leaderboard />
             </ProtectedRoute>
           }
         />

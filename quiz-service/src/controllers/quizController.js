@@ -5,11 +5,9 @@ const start = async (req, res, next) => {
     const { grade, lesson, difficulty, timeMode, language } = req.body;
 
     if (!grade || !lesson || !difficulty || !timeMode) {
-      return res
-        .status(400)
-        .json({
-          message: "grade, lesson, difficulty, and timeMode are required",
-        });
+      return res.status(400).json({
+        message: "grade, lesson, difficulty, and timeMode are required",
+      });
     }
 
     const result = await quizService.startQuiz({
@@ -36,11 +34,9 @@ const answer = async (req, res, next) => {
       questionIndex === undefined ||
       answerIndex === undefined
     ) {
-      return res
-        .status(400)
-        .json({
-          message: "sessionId, questionIndex, and answerIndex are required",
-        });
+      return res.status(400).json({
+        message: "sessionId, questionIndex, and answerIndex are required",
+      });
     }
 
     const result = await quizService.answerQuestion({
@@ -97,6 +93,7 @@ const complete = async (req, res, next) => {
       sessionId,
       timeSpentTotal,
       userId: req.user.id,
+      userName: req.user.name,
     });
 
     return res.status(200).json(result);
@@ -164,6 +161,16 @@ const explainAnswer = async (req, res, next) => {
   }
 };
 
+const leaderboard = async (req, res, next) => {
+  try {
+    const { lesson } = req.query;
+    const entries = await quizService.getLeaderboard({ lesson });
+    return res.status(200).json({ leaderboard: entries });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   start,
   answer,
@@ -173,4 +180,5 @@ module.exports = {
   stats,
   result,
   explainAnswer,
+  leaderboard,
 };

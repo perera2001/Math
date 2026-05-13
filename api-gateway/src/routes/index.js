@@ -57,6 +57,9 @@ router.delete('/users/:id', verifyToken, roleMiddleware('SUPER_ADMIN'), userServ
 router.use('/questions', verifyToken, roleMiddleware('ADMIN', 'SUPER_ADMIN'), questionServiceProxy);
 
 // ─── Quiz Service Routes (students only) ─────────────────────────────────────
+// Leaderboard is accessible to any authenticated user (students + admins)
+router.use('/quiz/leaderboard', verifyToken, quizServiceProxy);
+// All other quiz routes are students (USER role) only
 router.use('/quiz', verifyToken, roleMiddleware('USER'), quizServiceProxy);
 
 // Catch-all protected proxy (future services)
