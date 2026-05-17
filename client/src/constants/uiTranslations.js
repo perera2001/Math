@@ -54,7 +54,7 @@ const translations = {
     dash_topic: "📚 Performance by Topic",
     dash_topic_sub:
       "Quizzes played, average stars and correct answers per subject",
-    dash_start_quiz: "Start a Quiz",
+    dash_start_quiz: "Start a Game",
     dash_recent: "Recent History",
     dash_no_history: "No quizzes completed yet. Start one above!",
     dash_start_btn: "Start Quiz",

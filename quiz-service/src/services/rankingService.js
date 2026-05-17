@@ -54,15 +54,15 @@
 "use strict";
 
 const RANK_CONFIG = [
-  { rank: "Beginner",    starsPerTier: 3 },
-  { rank: "Learner",     starsPerTier: 3 },
-  { rank: "Apprentice",  starsPerTier: 4 },
-  { rank: "Skilled",     starsPerTier: 4 },
-  { rank: "Expert",      starsPerTier: 5 },
-  { rank: "Master",      starsPerTier: 5 },
+  { rank: "Beginner", starsPerTier: 3 },
+  { rank: "Learner", starsPerTier: 3 },
+  { rank: "Apprentice", starsPerTier: 4 },
+  { rank: "Skilled", starsPerTier: 4 },
+  { rank: "Expert", starsPerTier: 5 },
+  { rank: "Master", starsPerTier: 5 },
   { rank: "Grandmaster", starsPerTier: 6 },
-  { rank: "Mythic",      starsPerTier: 7 },
-  { rank: "Legend",      starsPerTier: 8 },
+  { rank: "Mythic", starsPerTier: 7 },
+  { rank: "Legend", starsPerTier: 8 },
 ];
 
 const LEGENDARY_SAGE_INDEX = 9;
@@ -125,66 +125,66 @@ function getRankLabel(state) {
 function resolveGameResult(currentState, gamePoints) {
   // Deep-copy state so we never mutate the caller's object
   const state = {
-    rankIndex:             currentState.rankIndex            ?? 0,
-    tier:                  currentState.tier                 ?? 3,
-    starsInTier:           currentState.starsInTier          ?? 0,
-    starProtectionPoints:  currentState.starProtectionPoints ?? 0,
-    starBonusPoints:       currentState.starBonusPoints      ?? 0,
-    lifetimeStarsEarned:   currentState.lifetimeStarsEarned  ?? 0,
-    legendarySageStars:    currentState.legendarySageStars   ?? 0,
-    profileLevel:          currentState.profileLevel         ?? 1,
-    profileXP:             currentState.profileXP            ?? 0,
-    coins:                 currentState.coins                ?? 0,
+    rankIndex: currentState.rankIndex ?? 0,
+    tier: currentState.tier ?? 3,
+    starsInTier: currentState.starsInTier ?? 0,
+    starProtectionPoints: currentState.starProtectionPoints ?? 0,
+    starBonusPoints: currentState.starBonusPoints ?? 0,
+    lifetimeStarsEarned: currentState.lifetimeStarsEarned ?? 0,
+    legendarySageStars: currentState.legendarySageStars ?? 0,
+    profileLevel: currentState.profileLevel ?? 1,
+    profileXP: currentState.profileXP ?? 0,
+    coins: currentState.coins ?? 0,
   };
 
   // ── STEP 1: Determine outcome ───────────────────────────────────────────
   const gamePercent = (gamePoints / 800) * 100;
   let outcome;
-  if      (gamePercent >= 87.5) outcome = "Flawless";
+  if (gamePercent >= 87.5) outcome = "Flawless";
   else if (gamePercent >= 62.5) outcome = "Victory";
   else if (gamePercent >= 37.5) outcome = "Draw";
-  else                          outcome = "Defeat";
+  else outcome = "Defeat";
 
-  let bonusBoosted  = false;
+  let bonusBoosted = false;
   let protectionUsed = false;
 
   // ── STEP 2: SBP auto-redemption on Victory ─────────────────────────────
   if (outcome === "Victory" && state.starBonusPoints >= 3) {
     state.starBonusPoints -= 3;
-    outcome     = "Flawless";
+    outcome = "Flawless";
     bonusBoosted = true;
   }
 
   // ── STEP 3: XP, coins, and SPP/SBP deltas ──────────────────────────────
-  let xpAwarded    = 0;
+  let xpAwarded = 0;
   let coinsAwarded = 0;
-  let sbpGain      = 0;
-  let sppGain      = 0;
+  let sbpGain = 0;
+  let sppGain = 0;
   let rankStarChange = 0;
 
   switch (outcome) {
     case "Flawless":
-      xpAwarded    = 200;
+      xpAwarded = 200;
       coinsAwarded = 5;
-      sbpGain      = 2;
+      sbpGain = 2;
       rankStarChange = 2;
       break;
     case "Victory":
-      xpAwarded    = 120;
+      xpAwarded = 120;
       coinsAwarded = 3;
-      sbpGain      = 1;
+      sbpGain = 1;
       rankStarChange = 1;
       break;
     case "Draw":
-      xpAwarded    = 60;
+      xpAwarded = 60;
       coinsAwarded = 1;
-      sppGain      = 1;
+      sppGain = 1;
       rankStarChange = 0;
       break;
     case "Defeat":
-      xpAwarded    = 30;
+      xpAwarded = 30;
       coinsAwarded = 0;
-      sppGain      = 1;
+      sppGain = 1;
       rankStarChange = -1;
       break;
   }
@@ -193,18 +193,18 @@ function resolveGameResult(currentState, gamePoints) {
   if (outcome === "Defeat" && state.starProtectionPoints > 0) {
     state.starProtectionPoints -= 1; // consume
     protectionUsed = true;
-    rankStarChange = 0;              // no star lost
-    sppGain        = 1;              // re-gain 1 SPP (builds back up)
+    rankStarChange = 0; // no star lost
+    sppGain = 1; // re-gain 1 SPP (builds back up)
   }
 
   // Snapshot before applying changes (for GameResult reporting)
-  const rankIndexBefore    = state.rankIndex;
-  const tierBefore         = state.tier;
-  const starsInTierBefore  = state.starsInTier;
-  const rankLabelBefore    = getRankLabel(state);
+  const rankIndexBefore = state.rankIndex;
+  const tierBefore = state.tier;
+  const starsInTierBefore = state.starsInTier;
+  const rankLabelBefore = getRankLabel(state);
 
   // ── STEP 5: Apply SPP/SBP gains ────────────────────────────────────────
-  state.starBonusPoints      += sbpGain;
+  state.starBonusPoints += sbpGain;
   state.starProtectionPoints += sppGain;
 
   // ── STEP 6: Cascade promotion / demotion ────────────────────────────────
@@ -226,15 +226,15 @@ function resolveGameResult(currentState, gamePoints) {
       if (state.tier === 1) {
         if (state.rankIndex === 8) {
           // Legend Tier 1 complete → Legendary Sage
-          state.rankIndex     = LEGENDARY_SAGE_INDEX;
-          state.tier          = 1;
-          state.starsInTier   = 0;
+          state.rankIndex = LEGENDARY_SAGE_INDEX;
+          state.tier = 1;
+          state.starsInTier = 0;
           // Any overflow becomes prestige stars
           state.legendarySageStars += overflow;
           break;
         } else {
           state.rankIndex++;
-          state.tier        = 3;
+          state.tier = 3;
           state.starsInTier = overflow;
         }
       } else {
@@ -251,7 +251,7 @@ function resolveGameResult(currentState, gamePoints) {
       } else {
         // Drop one tier within same rank
         state.tier++;
-        const cfg         = RANK_CONFIG[state.rankIndex];
+        const cfg = RANK_CONFIG[state.rankIndex];
         state.starsInTier = cfg.starsPerTier - 1 + state.starsInTier;
         // Clamp again (shouldn't happen with ≤1 star change, but be safe)
         if (state.starsInTier < 0) state.starsInTier = 0;
@@ -261,7 +261,7 @@ function resolveGameResult(currentState, gamePoints) {
 
   // ── STEP 7: Apply XP and coins ─────────────────────────────────────────
   state.profileXP += xpAwarded;
-  state.coins     += coinsAwarded;
+  state.coins += coinsAwarded;
 
   // Lifetime stars counter (monotonic)
   if (rankStarChange > 0) {
@@ -269,8 +269,9 @@ function resolveGameResult(currentState, gamePoints) {
   }
 
   // ── STEP 8: Apply caps ──────────────────────────────────────────────────
-  if (state.starProtectionPoints > SPP_CAP) state.starProtectionPoints = SPP_CAP;
-  if (state.starBonusPoints      > SBP_CAP) state.starBonusPoints      = SBP_CAP;
+  if (state.starProtectionPoints > SPP_CAP)
+    state.starProtectionPoints = SPP_CAP;
+  if (state.starBonusPoints > SBP_CAP) state.starBonusPoints = SBP_CAP;
 
   // ── STEP 9: Recompute profile level ────────────────────────────────────
   const { level, xpInLevel, xpToNext } = computeProfileLevel(state.profileXP);
@@ -278,7 +279,7 @@ function resolveGameResult(currentState, gamePoints) {
 
   // ── Build GameResult ────────────────────────────────────────────────────
   const rankLabelAfter = getRankLabel(state);
-  const rankChanged    = rankLabelAfter !== rankLabelBefore;
+  const rankChanged = rankLabelAfter !== rankLabelBefore;
   const promoted =
     rankChanged &&
     (state.rankIndex > rankIndexBefore ||
@@ -290,22 +291,28 @@ function resolveGameResult(currentState, gamePoints) {
 
   const gameResult = {
     gamePoints,
-    gamePercent:     Math.round(gamePercent * 10) / 10,
-    outcome:         bonusBoosted ? "Flawless" : outcome,
+    gamePercent: Math.round(gamePercent * 10) / 10,
+    outcome: bonusBoosted ? "Flawless" : outcome,
     bonusBoosted,
     protectionUsed,
     rankStarsBefore: starsInTierBefore,
-    rankStarsAfter:  state.starsInTier,
+    rankStarsAfter: state.starsInTier,
     rankChanged,
     promoted,
     demoted,
     xpAwarded,
     coinsAwarded,
-    newRank:         rankLabelAfter,
-    prevRank:        rankLabelBefore,
+    newRank: rankLabelAfter,
+    prevRank: rankLabelBefore,
     xpInLevel,
     xpToNext,
-    profileLevel:    state.profileLevel,
+    profileLevel: state.profileLevel,
+    // Stored so getResultBySession can reconstruct newRankState without refetching UserStats
+    newRankIndex: state.rankIndex,
+    newRankTier: state.tier,
+    newStarsInTier: state.starsInTier,
+    newSPP: state.starProtectionPoints,
+    newSBP: state.starBonusPoints,
   };
 
   return { newState: state, gameResult };

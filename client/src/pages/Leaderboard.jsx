@@ -170,10 +170,21 @@ export default function Leaderboard() {
                             {isMe && <span className="lb-you-badge">You</span>}
                           </span>
                         </span>
-                        <span className="lb-col lb-col-stars lb-stat-primary" style={{ display:"flex",alignItems:"center",gap:"0.4rem" }}>
-                          {activeSubject === "all" && entry.rankIndex != null ? (
+                        <span
+                          className="lb-col lb-col-stars lb-stat-primary"
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.4rem",
+                          }}
+                        >
+                          {activeSubject === "all" &&
+                          entry.rankIndex != null ? (
                             <RankBadge
-                              rankIndex={Math.min(entry.rankIndex ?? 0, LEGENDARY_SAGE_INDEX)}
+                              rankIndex={Math.min(
+                                entry.rankIndex ?? 0,
+                                LEGENDARY_SAGE_INDEX,
+                              )}
                               tier={entry.tier ?? 3}
                               starsInTier={entry.starsInTier ?? 0}
                               size="sm"

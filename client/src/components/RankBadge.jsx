@@ -14,15 +14,15 @@ import React from "react";
 
 // ── Rank configuration ──────────────────────────────────────────────────────
 export const RANK_CONFIG = [
-  { rank: "Beginner",    starsPerTier: 3 },
-  { rank: "Learner",     starsPerTier: 3 },
-  { rank: "Apprentice",  starsPerTier: 4 },
-  { rank: "Skilled",     starsPerTier: 4 },
-  { rank: "Expert",      starsPerTier: 5 },
-  { rank: "Master",      starsPerTier: 5 },
+  { rank: "Beginner", starsPerTier: 3 },
+  { rank: "Learner", starsPerTier: 3 },
+  { rank: "Apprentice", starsPerTier: 4 },
+  { rank: "Skilled", starsPerTier: 4 },
+  { rank: "Expert", starsPerTier: 5 },
+  { rank: "Master", starsPerTier: 5 },
   { rank: "Grandmaster", starsPerTier: 6 },
-  { rank: "Mythic",      starsPerTier: 7 },
-  { rank: "Legend",      starsPerTier: 8 },
+  { rank: "Mythic", starsPerTier: 7 },
+  { rank: "Legend", starsPerTier: 8 },
 ];
 
 export const LEGENDARY_SAGE_INDEX = 9;
@@ -43,30 +43,30 @@ const RANK_ICONS = [
 
 // Gradient backgrounds per rank (for profile header)
 export const RANK_GRADIENTS = [
-  "linear-gradient(135deg, #4ade80 0%, #22c55e 100%)",             // Beginner – fresh green
-  "linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)",             // Learner – sky blue
-  "linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%)",             // Apprentice – violet
-  "linear-gradient(135deg, #fb923c 0%, #f97316 100%)",             // Skilled – orange
-  "linear-gradient(135deg, #f472b6 0%, #ec4899 100%)",             // Expert – pink
-  "linear-gradient(135deg, #e879f9 0%, #d946ef 100%)",             // Master – fuchsia
-  "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)",             // Grandmaster – amber
-  "linear-gradient(135deg, #06b6d4 0%, #0ea5e9 100%)",             // Mythic – cyan
-  "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",             // Legend – red
+  "linear-gradient(135deg, #4ade80 0%, #22c55e 100%)", // Beginner – fresh green
+  "linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)", // Learner – sky blue
+  "linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%)", // Apprentice – violet
+  "linear-gradient(135deg, #fb923c 0%, #f97316 100%)", // Skilled – orange
+  "linear-gradient(135deg, #f472b6 0%, #ec4899 100%)", // Expert – pink
+  "linear-gradient(135deg, #e879f9 0%, #d946ef 100%)", // Master – fuchsia
+  "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)", // Grandmaster – amber
+  "linear-gradient(135deg, #06b6d4 0%, #0ea5e9 100%)", // Mythic – cyan
+  "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)", // Legend – red
   "linear-gradient(135deg, #fbbf24 0%, #a78bfa 60%, #ef4444 100%)", // Legendary Sage – rainbow
 ];
 
 // Card/accent colours per rank
 export const RANK_ACCENT = [
-  "#22c55e",  // Beginner
-  "#3b82f6",  // Learner
-  "#8b5cf6",  // Apprentice
-  "#f97316",  // Skilled
-  "#ec4899",  // Expert
-  "#d946ef",  // Master
-  "#f59e0b",  // Grandmaster
-  "#0ea5e9",  // Mythic
-  "#ef4444",  // Legend
-  "#fbbf24",  // Legendary Sage
+  "#22c55e", // Beginner
+  "#3b82f6", // Learner
+  "#8b5cf6", // Apprentice
+  "#f97316", // Skilled
+  "#ec4899", // Expert
+  "#d946ef", // Master
+  "#f59e0b", // Grandmaster
+  "#0ea5e9", // Mythic
+  "#ef4444", // Legend
+  "#fbbf24", // Legendary Sage
 ];
 
 /**
@@ -91,13 +91,15 @@ const RankBadge = ({
   showPips = true,
   showLabel = true,
 }) => {
-  const idx      = Math.min(Math.max(rankIndex, 0), LEGENDARY_SAGE_INDEX);
-  const isSage   = idx >= LEGENDARY_SAGE_INDEX;
-  const rankName = isSage ? "Legendary Sage" : (RANK_CONFIG[idx]?.rank ?? "Beginner");
-  const icon     = RANK_ICONS[idx] ?? "🌱";
-  const accent   = RANK_ACCENT[idx] ?? "#22c55e";
+  const idx = Math.min(Math.max(rankIndex, 0), LEGENDARY_SAGE_INDEX);
+  const isSage = idx >= LEGENDARY_SAGE_INDEX;
+  const rankName = isSage
+    ? "Legendary Sage"
+    : (RANK_CONFIG[idx]?.rank ?? "Beginner");
+  const icon = RANK_ICONS[idx] ?? "🌱";
+  const accent = RANK_ACCENT[idx] ?? "#22c55e";
   const gradient = RANK_GRADIENTS[idx] ?? RANK_GRADIENTS[0];
-  const spt      = isSage ? 0 : (RANK_CONFIG[idx]?.starsPerTier ?? 3);
+  const spt = isSage ? 0 : (RANK_CONFIG[idx]?.starsPerTier ?? 3);
   const clampedStars = Math.min(Math.max(starsInTier, 0), spt);
 
   const sizes = {
@@ -110,13 +112,18 @@ const RankBadge = ({
   return (
     <div
       className="rank-badge-wrapper"
-      style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", gap: "0.25rem" }}
+      style={{
+        display: "inline-flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: "0.25rem",
+      }}
       aria-label={`Rank: ${getRankLabel(idx, tier)}, ${clampedStars}/${spt} stars`}
     >
       {/* Icon circle */}
       <div
         style={{
-          width:  s.badge,
+          width: s.badge,
           height: s.badge,
           borderRadius: "50%",
           background: gradient,
@@ -135,11 +142,20 @@ const RankBadge = ({
 
       {showLabel && (
         <div style={{ textAlign: "center", lineHeight: 1.2 }}>
-          <div style={{ fontWeight: 800, fontSize: s.name, color: accent, whiteSpace: "nowrap" }}>
+          <div
+            style={{
+              fontWeight: 800,
+              fontSize: s.name,
+              color: accent,
+              whiteSpace: "nowrap",
+            }}
+          >
             {rankName}
           </div>
           {!isSage && (
-            <div style={{ fontSize: s.tier, color: "#94a3b8", fontWeight: 600 }}>
+            <div
+              style={{ fontSize: s.tier, color: "#94a3b8", fontWeight: 600 }}
+            >
               Tier {tier}
             </div>
           )}
@@ -147,7 +163,15 @@ const RankBadge = ({
       )}
 
       {showPips && !isSage && spt > 0 && (
-        <div style={{ display: "flex", gap: "2px", justifyContent: "center", flexWrap: "wrap", maxWidth: spt * (s.pip + 3) }}>
+        <div
+          style={{
+            display: "flex",
+            gap: "2px",
+            justifyContent: "center",
+            flexWrap: "wrap",
+            maxWidth: spt * (s.pip + 3),
+          }}
+        >
           {Array.from({ length: spt }, (_, i) => (
             <div
               key={i}

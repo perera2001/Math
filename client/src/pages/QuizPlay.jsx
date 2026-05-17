@@ -5,7 +5,12 @@ import { useQuiz } from "../context/QuizContext";
 import { useAuth } from "../context/AuthContext";
 import { useUILang } from "../context/UILanguageContext";
 import GameProgressBar from "../components/GameProgressBar";
-import RankBadge, { getRankLabel, getStarsPerTier, RANK_ACCENT, LEGENDARY_SAGE_INDEX } from "../components/RankBadge";
+import RankBadge, {
+  getRankLabel,
+  getStarsPerTier,
+  RANK_ACCENT,
+  LEGENDARY_SAGE_INDEX,
+} from "../components/RankBadge";
 
 const LABELS = ["A", "B", "C", "D"];
 
@@ -63,9 +68,14 @@ const QuizPlay = () => {
 
   /* Load player rank stats once at game start */
   useEffect(() => {
-    quizAPI.getStats().then((res) => {
-      setRankStats(res.data?.stats ?? res.data ?? null);
-    }).catch(() => { /* non-blocking */ });
+    quizAPI
+      .getStats()
+      .then((res) => {
+        setRankStats(res.data?.stats ?? res.data ?? null);
+      })
+      .catch(() => {
+        /* non-blocking */
+      });
   }, []);
 
   /* Initialise question states when questions arrive */
@@ -258,14 +268,20 @@ const QuizPlay = () => {
 
   // Current rank from loaded stats
   const curRankIdx = rankStats?.rankIndex ?? 0;
-  const curTier    = rankStats?.tier ?? 3;
-  const curStars   = rankStats?.starsInTier ?? 0;
-  const spp        = rankStats?.starProtectionPoints ?? 0;
-  const sbp        = rankStats?.starBonusPoints ?? 0;
-  const accentClr  = RANK_ACCENT[Math.min(curRankIdx, LEGENDARY_SAGE_INDEX)] ?? "#22c55e";
+  const curTier = rankStats?.tier ?? 3;
+  const curStars = rankStats?.starsInTier ?? 0;
+  const spp = rankStats?.starProtectionPoints ?? 0;
+  const sbp = rankStats?.starBonusPoints ?? 0;
+  const accentClr =
+    RANK_ACCENT[Math.min(curRankIdx, LEGENDARY_SAGE_INDEX)] ?? "#22c55e";
 
   return (
     <div className="ghp-page">
+      {/* Floating glow orbs (same as QuizSetup) */}
+      <div className="glb-bg-orb glb-bg-orb--1" />
+      <div className="glb-bg-orb glb-bg-orb--2" />
+      <div className="glb-bg-orb glb-bg-orb--3" />
+
       {completing && (
         <div className="ghp-overlay">
           <div className="ghp-overlay-text">{t("game_submitting")}</div>
@@ -277,15 +293,21 @@ const QuizPlay = () => {
         {/* Left: player info + rank badge */}
         <div className="ghp-hud-player">
           <RankBadge
-            rankIndex={curRankIdx} tier={curTier}
-            starsInTier={curStars} size="sm"
-            showPips={false} showLabel={false}
+            rankIndex={curRankIdx}
+            tier={curTier}
+            starsInTier={curStars}
+            size="sm"
+            showPips={false}
+            showLabel={false}
           />
           <div className="ghp-hud-playerinfo">
             <span className="ghp-hud-name">
               {user?.name?.split(" ")[0] || "Player"}
             </span>
-            <span className="ghp-hud-rank" style={{ color: accentClr, fontWeight:700 }}>
+            <span
+              className="ghp-hud-rank"
+              style={{ color: accentClr, fontWeight: 700 }}
+            >
               {getRankLabel(curRankIdx, curTier)}
             </span>
           </div>
@@ -467,7 +489,6 @@ const QuizPlay = () => {
           </div>
         </div>
       </div>
-
     </div>
   );
 };
