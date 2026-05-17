@@ -19,9 +19,23 @@ const fmt = (secs) => {
 /* Derive a pseudo rank label from score */
 const getRank = (score) => {
   if (score >= 300) return { label: "Expert", next: null, pct: 100 };
-  if (score >= 200) return { label: "Advanced", next: "Expert", pct: Math.round(((score - 200) / 100) * 100) };
-  if (score >= 100) return { label: "Intermediate", next: "Advanced", pct: Math.round(((score - 100) / 100) * 100) };
-  return { label: "Beginner", next: "Intermediate", pct: Math.round((score / 100) * 100) };
+  if (score >= 200)
+    return {
+      label: "Advanced",
+      next: "Expert",
+      pct: Math.round(((score - 200) / 100) * 100),
+    };
+  if (score >= 100)
+    return {
+      label: "Intermediate",
+      next: "Advanced",
+      pct: Math.round(((score - 100) / 100) * 100),
+    };
+  return {
+    label: "Beginner",
+    next: "Intermediate",
+    pct: Math.round((score / 100) * 100),
+  };
 };
 
 const QuizPlay = () => {
@@ -75,7 +89,7 @@ const QuizPlay = () => {
           resolved: false,
           correct: false,
           finalAnswer: null,
-        }))
+        })),
       );
     }
   }, [questions.length]);
@@ -227,7 +241,7 @@ const QuizPlay = () => {
       questions.length,
       advanceIndex,
       triggerComplete,
-    ]
+    ],
   );
 
   if (!sessionId || !questions.length || !questionStates.length) return null;
@@ -263,9 +277,13 @@ const QuizPlay = () => {
       <div className="ghp-hud">
         {/* Left: player info */}
         <div className="ghp-hud-player">
-          <div className="ghp-hud-avatar" aria-hidden="true">{initial}</div>
+          <div className="ghp-hud-avatar" aria-hidden="true">
+            {initial}
+          </div>
           <div className="ghp-hud-playerinfo">
-            <span className="ghp-hud-name">{user?.name?.split(" ")[0] || "Player"}</span>
+            <span className="ghp-hud-name">
+              {user?.name?.split(" ")[0] || "Player"}
+            </span>
             <span className="ghp-hud-rank">{rank.label}</span>
           </div>
         </div>
@@ -280,7 +298,10 @@ const QuizPlay = () => {
             <span className="ghp-stat-icon">💎</span>
             <span className="ghp-stat-val">{gems}</span>
           </div>
-          <div className={`ghp-stat${streak >= 3 ? " ghp-stat--fire" : ""}`} title={t("game_streak")}>
+          <div
+            className={`ghp-stat${streak >= 3 ? " ghp-stat--fire" : ""}`}
+            title={t("game_streak")}
+          >
             <span className="ghp-stat-icon">🔥</span>
             <span className="ghp-stat-val">{streak}</span>
             <span className="ghp-stat-label">{t("game_streak")}</span>
@@ -308,11 +329,10 @@ const QuizPlay = () => {
           {/* Mission badge + lesson tag */}
           <div className="ghp-q-meta">
             <span className="ghp-mission-badge">
-              {t("game_mission")} {currentIndex + 1} {t("game_of")} {questions.length}
+              {t("game_mission")} {currentIndex + 1} {t("game_of")}{" "}
+              {questions.length}
             </span>
-            {lesson && (
-              <span className="ghp-lesson-tag">{lesson}</span>
-            )}
+            {lesson && <span className="ghp-lesson-tag">{lesson}</span>}
           </div>
 
           {/* Question text */}
@@ -330,8 +350,12 @@ const QuizPlay = () => {
             <div className="ghp-answers">
               {currentQ.answers.map((ans, idx) => {
                 const isWrong = currentState.wrongIndices.includes(idx);
-                const isCorrectAnswer = currentState.resolved && currentState.correct && currentState.finalAnswer === idx;
-                const isDisabled = completing || advancing || isWrong || (currentState.resolved);
+                const isCorrectAnswer =
+                  currentState.resolved &&
+                  currentState.correct &&
+                  currentState.finalAnswer === idx;
+                const isDisabled =
+                  completing || advancing || isWrong || currentState.resolved;
 
                 let btnCls = "ghp-answer-btn";
                 if (isCorrectAnswer) btnCls += " correct";
@@ -348,8 +372,22 @@ const QuizPlay = () => {
                   >
                     <span className="ghp-answer-label">{LABELS[idx]}</span>
                     <span className="ghp-answer-text">{ans.text}</span>
-                    {isCorrectAnswer && <span className="ghp-answer-badge correct-badge" aria-hidden="true">✔</span>}
-                    {isWrong && <span className="ghp-answer-badge wrong-badge" aria-hidden="true">✗</span>}
+                    {isCorrectAnswer && (
+                      <span
+                        className="ghp-answer-badge correct-badge"
+                        aria-hidden="true"
+                      >
+                        ✔
+                      </span>
+                    )}
+                    {isWrong && (
+                      <span
+                        className="ghp-answer-badge wrong-badge"
+                        aria-hidden="true"
+                      >
+                        ✗
+                      </span>
+                    )}
                   </button>
                 );
               })}
@@ -357,7 +395,11 @@ const QuizPlay = () => {
 
             {/* Floating XP indicator */}
             {floatingXP && (
-              <div className="ghp-floating-xp" key={floatingXP.key} aria-live="polite">
+              <div
+                className="ghp-floating-xp"
+                key={floatingXP.key}
+                aria-live="polite"
+              >
                 +{floatingXP.xp} XP ✨
               </div>
             )}
@@ -366,10 +408,10 @@ const QuizPlay = () => {
           {/* Mascot hint */}
           {currentState.attempts === 1 && !currentState.resolved && (
             <div className="ghp-mascot">
-              <div className="ghp-mascot-avatar" aria-hidden="true">🤖</div>
-              <div className="ghp-mascot-bubble">
-                {t("game_try_again")}
+              <div className="ghp-mascot-avatar" aria-hidden="true">
+                🤖
               </div>
+              <div className="ghp-mascot-bubble">{t("game_try_again")}</div>
             </div>
           )}
         </div>
@@ -393,9 +435,7 @@ const QuizPlay = () => {
           <div className="ghp-panel-section ghp-score-section">
             <div className="ghp-score-num">{score}</div>
             <div className="ghp-score-label">{t("results_points")}</div>
-            {streak > 0 && (
-              <div className="ghp-streak-badge">🔥 ×{streak}</div>
-            )}
+            {streak > 0 && <div className="ghp-streak-badge">🔥 ×{streak}</div>}
           </div>
 
           {/* Score rewards info */}

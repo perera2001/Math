@@ -30,9 +30,27 @@ const LESSONS = [
 ];
 
 const DIFFICULTIES = [
-  { value: "Easy", color: "#10B981", glow: "rgba(16,185,129,0.4)", icon: "🟢", diffKey: "setup_diff_easy" },
-  { value: "Medium", color: "#F59E0B", glow: "rgba(245,158,11,0.4)", icon: "🟡", diffKey: "setup_diff_medium" },
-  { value: "Hard", color: "#EF4444", glow: "rgba(239,68,68,0.4)", icon: "🔴", diffKey: "setup_diff_hard" },
+  {
+    value: "Easy",
+    color: "#10B981",
+    glow: "rgba(16,185,129,0.4)",
+    icon: "🟢",
+    diffKey: "setup_diff_easy",
+  },
+  {
+    value: "Medium",
+    color: "#F59E0B",
+    glow: "rgba(245,158,11,0.4)",
+    icon: "🟡",
+    diffKey: "setup_diff_medium",
+  },
+  {
+    value: "Hard",
+    color: "#EF4444",
+    glow: "rgba(239,68,68,0.4)",
+    icon: "🔴",
+    diffKey: "setup_diff_hard",
+  },
 ];
 
 const TIME_MODES = [
@@ -143,8 +161,12 @@ const QuizSetup = () => {
             <div className="glb-player-chip">
               <div className="glb-player-avatar">{initial}</div>
               <div className="glb-player-info">
-                <span className="glb-player-name">{user.name?.split(" ")[0]}</span>
-                <span className="glb-player-label">{t("setup_player_label")}</span>
+                <span className="glb-player-name">
+                  {user.name?.split(" ")[0]}
+                </span>
+                <span className="glb-player-label">
+                  {t("setup_player_label")}
+                </span>
               </div>
             </div>
           )}
@@ -154,11 +176,22 @@ const QuizSetup = () => {
         <div className="glb-steps">
           {[
             { label: t("setup_lesson"), done: !!lesson, val: lesson },
-            { label: t("setup_difficulty"), done: !!difficulty, val: difficulty },
+            {
+              label: t("setup_difficulty"),
+              done: !!difficulty,
+              val: difficulty,
+            },
             { label: t("setup_time"), done: !!timeMode, val: timeMode },
-            { label: t("setup_language"), done: true, val: language.toUpperCase() },
+            {
+              label: t("setup_language"),
+              done: true,
+              val: language.toUpperCase(),
+            },
           ].map((step) => (
-            <div key={step.label} className={`glb-step${step.done ? " done" : ""}`}>
+            <div
+              key={step.label}
+              className={`glb-step${step.done ? " done" : ""}`}
+            >
               <span className="glb-step-check">{step.done ? "✔" : "○"}</span>
               <span className="glb-step-label">{step.label}</span>
               {step.done && step.val && (
@@ -184,13 +217,21 @@ const QuizSetup = () => {
                 <button
                   key={value}
                   className={`glb-opt-btn${lesson === value ? " selected" : ""}`}
-                  style={lesson === value ? { "--opt-color": color, "--opt-glow": glow } : { "--opt-color": color, "--opt-glow": glow }}
+                  style={
+                    lesson === value
+                      ? { "--opt-color": color, "--opt-glow": glow }
+                      : { "--opt-color": color, "--opt-glow": glow }
+                  }
                   onClick={() => setLesson(value)}
                   aria-pressed={lesson === value}
                 >
                   <span className="glb-opt-icon">{icon}</span>
                   <span className="glb-opt-label">{t(key)}</span>
-                  {lesson === value && <span className="glb-opt-check" style={{ color }}>✔</span>}
+                  {lesson === value && (
+                    <span className="glb-opt-check" style={{ color }}>
+                      ✔
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
@@ -216,7 +257,11 @@ const QuizSetup = () => {
                 >
                   <span className="glb-opt-icon">{icon}</span>
                   <span className="glb-opt-label">{t(diffKey)}</span>
-                  {difficulty === value && <span className="glb-opt-check" style={{ color }}>✔</span>}
+                  {difficulty === value && (
+                    <span className="glb-opt-check" style={{ color }}>
+                      ✔
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
@@ -232,22 +277,28 @@ const QuizSetup = () => {
               </div>
             </div>
             <div className="glb-card-body">
-              {TIME_MODES.map(({ value, icon, labelKey, subKey, color, glow }) => (
-                <button
-                  key={value}
-                  className={`glb-opt-btn glb-opt-btn--time${timeMode === value ? " selected" : ""}`}
-                  style={{ "--opt-color": color, "--opt-glow": glow }}
-                  onClick={() => setTimeMode(value)}
-                  aria-pressed={timeMode === value}
-                >
-                  <span className="glb-opt-icon">{icon}</span>
-                  <div className="glb-opt-info">
-                    <span className="glb-opt-label">{t(labelKey)}</span>
-                    <span className="glb-opt-sub">{t(subKey)}</span>
-                  </div>
-                  {timeMode === value && <span className="glb-opt-check" style={{ color }}>✔</span>}
-                </button>
-              ))}
+              {TIME_MODES.map(
+                ({ value, icon, labelKey, subKey, color, glow }) => (
+                  <button
+                    key={value}
+                    className={`glb-opt-btn glb-opt-btn--time${timeMode === value ? " selected" : ""}`}
+                    style={{ "--opt-color": color, "--opt-glow": glow }}
+                    onClick={() => setTimeMode(value)}
+                    aria-pressed={timeMode === value}
+                  >
+                    <span className="glb-opt-icon">{icon}</span>
+                    <div className="glb-opt-info">
+                      <span className="glb-opt-label">{t(labelKey)}</span>
+                      <span className="glb-opt-sub">{t(subKey)}</span>
+                    </div>
+                    {timeMode === value && (
+                      <span className="glb-opt-check" style={{ color }}>
+                        ✔
+                      </span>
+                    )}
+                  </button>
+                ),
+              )}
             </div>
           </div>
 
@@ -265,16 +316,28 @@ const QuizSetup = () => {
                 <button
                   key={value}
                   className={`glb-opt-btn glb-opt-btn--lang${language === value ? " selected" : ""}`}
-                  style={{ "--opt-color": "#e879f9", "--opt-glow": "rgba(232,121,249,0.4)" }}
+                  style={{
+                    "--opt-color": "#e879f9",
+                    "--opt-glow": "rgba(232,121,249,0.4)",
+                  }}
                   onClick={() => setLanguage(value)}
                   aria-pressed={language === value}
                 >
                   <span className="glb-lang-badge">{badge}</span>
                   <div className="glb-opt-info">
                     <span className="glb-opt-label">{label}</span>
-                    {sub !== label && <span className="glb-opt-sub">{sub}</span>}
+                    {sub !== label && (
+                      <span className="glb-opt-sub">{sub}</span>
+                    )}
                   </div>
-                  {language === value && <span className="glb-opt-check" style={{ color: "#e879f9" }}>✔</span>}
+                  {language === value && (
+                    <span
+                      className="glb-opt-check"
+                      style={{ color: "#e879f9" }}
+                    >
+                      ✔
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
@@ -282,7 +345,11 @@ const QuizSetup = () => {
         </div>
 
         {/* â”€â”€ Error â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-        {error && <div className="glb-error" role="alert">{error}</div>}
+        {error && (
+          <div className="glb-error" role="alert">
+            {error}
+          </div>
+        )}
 
         {/* â”€â”€ Start Game Button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <div className="glb-start-wrap">

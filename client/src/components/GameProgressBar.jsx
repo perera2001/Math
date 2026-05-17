@@ -9,7 +9,13 @@ import React from "react";
  */
 const GameProgressBar = ({ total, current, states }) => {
   return (
-    <div className="gpb-wrap" role="progressbar" aria-valuemin={0} aria-valuemax={total} aria-valuenow={current + 1}>
+    <div
+      className="gpb-wrap"
+      role="progressbar"
+      aria-valuemin={0}
+      aria-valuemax={total}
+      aria-valuenow={current + 1}
+    >
       {Array.from({ length: total }, (_, i) => {
         const state = states[i] || {};
         let cls = "gpb-seg";
@@ -20,7 +26,13 @@ const GameProgressBar = ({ total, current, states }) => {
         }
         return (
           <div key={i} className={cls} title={`Q${i + 1}`}>
-            {state.resolved ? (state.correct ? "✓" : "✗") : i === current ? i + 1 : ""}
+            {state.resolved
+              ? state.correct
+                ? "✓"
+                : "✗"
+              : i === current
+                ? i + 1
+                : ""}
           </div>
         );
       })}
