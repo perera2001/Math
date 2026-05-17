@@ -11,7 +11,7 @@ const StudentNavbar = ({ user, onLogout, t, uiLang, switchLang }) => {
 
   const navItems = [
     { path: "/student/dashboard", icon: "⊞", label: t("nav_dashboard") },
-    { path: "/student/quiz/setup", icon: "▶", label: "Play Quiz" },
+    { path: "/student/quiz/setup", icon: "▶", label: t("nav_play_game") },
     { path: "/student/leaderboard", icon: "🏆", label: "Leaderboard" },
     { path: "/student/profile", icon: "👤", label: t("nav_profile") },
   ];

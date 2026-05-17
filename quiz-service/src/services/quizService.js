@@ -4,6 +4,7 @@ const UserStats = require("../models/UserStats");
 const {
   explainAnswer: explainAnswerWithAI,
 } = require("./aiExplanationService");
+const { resolveGameResult } = require("./rankingService");
 
 // Read-only reference to the shared 'questions' collection
 const QuestionSchema = new mongoose.Schema(
@@ -27,8 +28,11 @@ const Question =
   mongoose.models.QuizQuestion ||
   mongoose.model("QuizQuestion", QuestionSchema);
 
-const BASE_POINTS = { Easy: 10, Medium: 20, Hard: 30 };
-const TIME_MULTIPLIER = { "8min": 2.0, "16min": 1.0, unlimited: 0.5 };
+// New fixed scoring: 100 pts for 1st-attempt correct, 50 pts for 2nd-attempt
+const POINTS_FIRST_ATTEMPT = 100;
+const POINTS_SECOND_ATTEMPT = 50;
+const MAX_GAME_POINTS = 800; // 8 × 100
+
 const TIME_LIMITS = { "8min": 480, "16min": 960, unlimited: null };
 
 const _buildPerQuestionReview = (questions = []) =>
@@ -42,6 +46,7 @@ const _buildPerQuestionReview = (questions = []) =>
       userAnswerIndex: q.userAnswerIndex,
       correctAnswerIndex,
       timeSpent: q.timeSpent,
+      attemptCount: q.attemptCount || 1,
     };
   });
 
@@ -127,6 +132,8 @@ const answerQuestion = async ({
   const isCorrect = question.answers[answerIndex]?.isCorrect === true;
   const correctAnswerIndex = question.answers.findIndex((a) => a.isCorrect);
 
+  // Track attempt count per question
+  question.attemptCount = (question.attemptCount || 0) + 1;
   question.userAnswerIndex = answerIndex;
   question.isCorrect = isCorrect;
   question.timeSpent = timeSpent || 0;
@@ -136,15 +143,12 @@ const answerQuestion = async ({
     if (session.currentStreak > session.maxStreak) {
       session.maxStreak = session.currentStreak;
     }
-
-    const base = BASE_POINTS[session.difficulty];
-    const multiplier = TIME_MULTIPLIER[session.timeMode];
-
-    let streakBonus = 0;
-    if (session.currentStreak === 3) streakBonus = 10;
-    else if (session.currentStreak === 5) streakBonus = 25;
-
-    session.totalScore += Math.floor((base + streakBonus) * multiplier);
+    // Fixed scoring: 100 for first attempt, 50 for any subsequent attempt
+    const pts =
+      question.attemptCount === 1
+        ? POINTS_FIRST_ATTEMPT
+        : POINTS_SECOND_ATTEMPT;
+    session.totalScore += pts;
   } else {
     session.currentStreak = 0;
   }
@@ -238,43 +242,75 @@ const completeQuiz = async ({
   }
 
   const correctCount = session.questions.filter((q) => q.isCorrect).length;
+  // totalScore is already the sum of per-question awards (100/50/0)
 
-  // Perfect quiz bonus (8/8) applied at completion
-  if (correctCount === 8) {
-    session.totalScore += Math.floor(100 * TIME_MULTIPLIER[session.timeMode]);
-  }
-
-  // Lifeline penalty: −5 per lifeline used
-  const lifelinesUsedCount = Object.values(session.lifelinesUsed).filter(
-    Boolean,
-  ).length;
-  session.totalScore = Math.max(0, session.totalScore - lifelinesUsedCount * 5);
-
-  const stars = _calculateStars(session, timeSpentTotal, correctCount);
-  session.starsEarned = stars;
+  session.starsEarned = correctCount; // kept for backward compat (0–8 range)
   session.correctCount = correctCount;
   session.timeSpentTotal = timeSpentTotal || 0;
   session.status = "completed";
   session.completedAt = new Date();
+
+  // ── Fetch current rank state ───────────────────────────────────────────
+  let statsDoc = await UserStats.findOne({ userId });
+  if (!statsDoc) {
+    statsDoc = await UserStats.create({ userId });
+  }
+
+  const currentRankState = {
+    rankIndex: statsDoc.rankIndex,
+    tier: statsDoc.tier,
+    starsInTier: statsDoc.starsInTier,
+    starProtectionPoints: statsDoc.starProtectionPoints,
+    starBonusPoints: statsDoc.starBonusPoints,
+    lifetimeStarsEarned: statsDoc.lifetimeStarsEarned,
+    legendarySageStars: statsDoc.legendarySageStars,
+    profileLevel: statsDoc.profileLevel,
+    profileXP: statsDoc.profileXP,
+    coins: statsDoc.coins,
+  };
+
+  // ── Run ranking logic ──────────────────────────────────────────────────
+  const { newState, gameResult } = resolveGameResult(
+    currentRankState,
+    session.totalScore,
+  );
+
+  session.gameOutcome = gameResult.outcome;
+  session.rankResult = gameResult;
   await session.save();
 
-  // Atomically increment UserStats
+  // ── Atomically update UserStats ────────────────────────────────────────
   const incFields = {
-    totalStars: stars,
+    totalStars: correctCount, // legacy star counter
     totalQuizzes: 1,
     totalScore: session.totalScore,
     [`byLesson.${session.lesson}.played`]: 1,
-    [`byLesson.${session.lesson}.stars`]: stars,
+    [`byLesson.${session.lesson}.stars`]: correctCount,
   };
   if (correctCount === 8) incFields.perfectQuizzes = 1;
 
   await UserStats.findOneAndUpdate(
     { userId },
-    { $inc: incFields, ...(userName ? { $set: { userName } } : {}) },
+    {
+      $inc: incFields,
+      $set: {
+        rankIndex: newState.rankIndex,
+        tier: newState.tier,
+        starsInTier: newState.starsInTier,
+        starProtectionPoints: newState.starProtectionPoints,
+        starBonusPoints: newState.starBonusPoints,
+        lifetimeStarsEarned: newState.lifetimeStarsEarned,
+        legendarySageStars: newState.legendarySageStars,
+        profileLevel: newState.profileLevel,
+        profileXP: newState.profileXP,
+        coins: newState.coins,
+        ...(userName ? { userName } : {}),
+      },
+    },
     { upsert: true },
   );
 
-  // Conditional bestStreak update (atomic, no race condition risk for single-user flow)
+  // bestStreak conditional update
   await UserStats.updateOne(
     { userId, bestStreak: { $lt: session.maxStreak } },
     { $set: { bestStreak: session.maxStreak } },
@@ -288,12 +324,15 @@ const completeQuiz = async ({
     difficulty: session.difficulty,
     completedAt: session.completedAt,
     totalScore: session.totalScore,
-    starsEarned: stars,
+    starsEarned: session.starsEarned,
     correctCount,
     maxStreak: session.maxStreak,
     timeSpentTotal: session.timeSpentTotal,
     lifelinesUsed: session.lifelinesUsed,
     perQuestion: _buildPerQuestionReview(session.questions),
+    // ── New ranking fields ─────────────────────────────────────────────
+    rankResult: gameResult,
+    newRankState: newState,
   };
 };
 
@@ -327,6 +366,20 @@ const getResultBySession = async ({ sessionId, userId }) => {
     completedAt: session.completedAt,
     lifelinesUsed: session.lifelinesUsed,
     perQuestion: _buildPerQuestionReview(session.questions),
+    rankResult: session.rankResult || null,
+    // Reconstruct newRankState from fields stored inside rankResult
+    newRankState: session.rankResult
+      ? {
+          rankIndex: session.rankResult.newRankIndex ?? 0,
+          tier: session.rankResult.newRankTier ?? 3,
+          starsInTier:
+            session.rankResult.newStarsInTier ??
+            session.rankResult.rankStarsAfter ??
+            0,
+          starProtectionPoints: session.rankResult.newSPP ?? 0,
+          starBonusPoints: session.rankResult.newSBP ?? 0,
+        }
+      : null,
   };
 };
 
@@ -411,51 +464,21 @@ const getStats = async (userId) => {
   return stats;
 };
 
-// ── helpers ──────────────────────────────────────────────────────────────────
-function _calculateStars(session, timeSpentTotal, correctCount) {
-  const { timeMode, difficulty, timeLimit } = session;
-  let stars = 0;
-
-  if (timeMode === "unlimited") {
-    if (correctCount === 8) stars = 3;
-    else if (correctCount >= 6) stars = 2;
-    else if (correctCount >= 4) stars = 1;
-    else stars = 0;
-  } else {
-    const limit = timeLimit || (timeMode === "8min" ? 480 : 960);
-    const spent = timeSpentTotal || 0;
-    const fraction = spent / limit;
-
-    if (spent > limit) {
-      // Time ran out
-      stars = 0;
-    } else if (fraction < 0.5 && correctCount >= 6) {
-      stars = 3;
-    } else if (fraction < 0.75 && correctCount >= 5) {
-      stars = 2;
-    } else if (correctCount >= 4) {
-      stars = 1;
-    } else {
-      stars = 0;
-    }
-  }
-
-  // Bonus star: Hard mode + ≥7 correct (cap at 4)
-  if (difficulty === "Hard" && correctCount >= 7) {
-    stars = Math.min(stars + 1, 4);
-  }
-
-  return stars;
-}
-
 // ── getLeaderboard ──────────────────────────────────────────────────────────
 const getLeaderboard = async ({ lesson } = {}) => {
   const VALID_LESSONS = ["Geometry", "Algebra", "Numbers"];
   const isLesson = lesson && VALID_LESSONS.includes(lesson);
 
+  // Sort by rank (rankIndex desc, tier asc=better, starsInTier desc), then legacy score
   const sortField = isLesson
     ? { [`byLesson.${lesson}.stars`]: -1, [`byLesson.${lesson}.played`]: -1 }
-    : { totalStars: -1, totalScore: -1 };
+    : {
+        rankIndex: -1,
+        tier: 1, // 1 is highest, so ascending = better first
+        starsInTier: -1,
+        lifetimeStarsEarned: -1,
+        totalScore: -1,
+      };
 
   const entries = await UserStats.find().sort(sortField).limit(50).lean();
 
@@ -468,6 +491,13 @@ const getLeaderboard = async ({ lesson } = {}) => {
     totalQuizzes: entry.totalQuizzes,
     perfectQuizzes: entry.perfectQuizzes,
     bestStreak: entry.bestStreak,
+    // Ranking fields
+    rankIndex: entry.rankIndex ?? 0,
+    tier: entry.tier ?? 3,
+    starsInTier: entry.starsInTier ?? 0,
+    lifetimeStarsEarned: entry.lifetimeStarsEarned ?? 0,
+    profileLevel: entry.profileLevel ?? 1,
+    coins: entry.coins ?? 0,
     lessonStars: isLesson ? (entry.byLesson?.[lesson]?.stars ?? 0) : null,
     lessonPlayed: isLesson ? (entry.byLesson?.[lesson]?.played ?? 0) : null,
     byLesson: entry.byLesson,
