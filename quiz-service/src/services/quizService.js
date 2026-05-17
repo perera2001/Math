@@ -368,13 +368,18 @@ const getResultBySession = async ({ sessionId, userId }) => {
     perQuestion: _buildPerQuestionReview(session.questions),
     rankResult: session.rankResult || null,
     // Reconstruct newRankState from fields stored inside rankResult
-    newRankState: session.rankResult ? {
-      rankIndex: session.rankResult.newRankIndex ?? 0,
-      tier:      session.rankResult.newRankTier   ?? 3,
-      starsInTier:           session.rankResult.newStarsInTier ?? (session.rankResult.rankStarsAfter ?? 0),
-      starProtectionPoints:  session.rankResult.newSPP ?? 0,
-      starBonusPoints:       session.rankResult.newSBP ?? 0,
-    } : null,
+    newRankState: session.rankResult
+      ? {
+          rankIndex: session.rankResult.newRankIndex ?? 0,
+          tier: session.rankResult.newRankTier ?? 3,
+          starsInTier:
+            session.rankResult.newStarsInTier ??
+            session.rankResult.rankStarsAfter ??
+            0,
+          starProtectionPoints: session.rankResult.newSPP ?? 0,
+          starBonusPoints: session.rankResult.newSBP ?? 0,
+        }
+      : null,
   };
 };
 
