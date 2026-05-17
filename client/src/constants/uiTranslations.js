@@ -142,6 +142,25 @@ const translations = {
     results_not_found: "Results not found.",
     results_back_dashboard: "Back to Dashboard",
 
+    // ── Rank system ──────────────────────────────────────────────────────
+    outcome_flawless: "Flawless",
+    outcome_victory: "Victory",
+    outcome_draw: "Draw",
+    outcome_defeat: "Defeat",
+    rank_beginner: "Beginner",
+    rank_learner: "Learner",
+    rank_apprentice: "Apprentice",
+    rank_skilled: "Skilled",
+    rank_expert: "Expert",
+    rank_master: "Master",
+    rank_grandmaster: "Grandmaster",
+    rank_mythic: "Mythic",
+    rank_legend: "Legend",
+    rank_legendary_sage: "Legendary Sage",
+    stars_protection: "Star Protection",
+    stars_bonus: "Star Bonus",
+    profile_math_hero: "Math Hero",
+
     // ── Student Profile ───────────────────────────────────────────────────
     profile_back: "← Back to Dashboard",
     profile_title: "My Profile",
@@ -310,6 +329,25 @@ const translations = {
     results_loading: "ප්‍රතිඵල පූරණය වෙමින්…",
     results_not_found: "ප්‍රතිඵල හමු නොවිණි.",
     results_back_dashboard: "ඩැෂ්බෝඩ් වෙත ආපසු",
+
+    // ── Rank system ──────────────────────────────────────────────────────
+    outcome_flawless: "නිර්දෝෂයි",
+    outcome_victory: "ජයග්‍රහණය",
+    outcome_draw: "සමතා",
+    outcome_defeat: "පරාජය",
+    rank_beginner: "ආරම්භකයා",
+    rank_learner: "ඉගෙනුම්කරු",
+    rank_apprentice: "ශිෂ්‍යයා",
+    rank_skilled: "දක්ෂයා",
+    rank_expert: "විශේෂඥයා",
+    rank_master: "ප්‍රවීණයා",
+    rank_grandmaster: "මහා ප්‍රවීණයා",
+    rank_mythic: "පුරාවෘත්ත",
+    rank_legend: "පුරාණෝක්ති",
+    rank_legendary_sage: "පුරාණෝක්ති ඍෂිවරයා",
+    stars_protection: "තරු ආරක්ෂණය",
+    stars_bonus: "තරු බෝනස්",
+    profile_math_hero: "ගණිත වීරයා",
 
     // ── Student Profile ───────────────────────────────────────────────────
     profile_back: "← ඩැෂ්බෝඩ් වෙත ආපසු",
@@ -485,6 +523,25 @@ const translations = {
     results_loading: "முடிவுகள் ஏற்றப்படுகின்றன…",
     results_not_found: "முடிவுகள் கிடைக்கவில்லை.",
     results_back_dashboard: "முகப்புக்குத் திரும்பு",
+
+    // ── Rank system ──────────────────────────────────────────────────────
+    outcome_flawless: "குற்றமற்ற",
+    outcome_victory: "வெற்றி",
+    outcome_draw: "சமநிலை",
+    outcome_defeat: "தோல்வி",
+    rank_beginner: "ஆரம்பநிலை",
+    rank_learner: "கற்பவர்",
+    rank_apprentice: "பயிற்சியாளர்",
+    rank_skilled: "திறமையான",
+    rank_expert: "நிபுணர்",
+    rank_master: "வல்லுநர்",
+    rank_grandmaster: "பெருவல்லுநர்",
+    rank_mythic: "புராண",
+    rank_legend: "கதாநாயகர்",
+    rank_legendary_sage: "கதாநாயக முனிவர்",
+    stars_protection: "நட்சத்திர பாதுகாப்பு",
+    stars_bonus: "நட்சத்திர போனஸ்",
+    profile_math_hero: "கணித வீரர்",
 
     // ── Student Profile ───────────────────────────────────────────────────
     profile_back: "← முகப்புக்குத் திரும்பு",

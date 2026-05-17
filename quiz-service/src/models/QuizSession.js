@@ -15,6 +15,8 @@ const questionItemSchema = new mongoose.Schema(
     userAnswerIndex: { type: Number, default: null },
     isCorrect: { type: Boolean, default: null },
     timeSpent: { type: Number, default: 0 },
+    // Tracks which attempt this question was answered on (1 = first, 2 = second)
+    attemptCount: { type: Number, default: 0 },
   },
   { _id: true },
 );
@@ -64,6 +66,14 @@ const quizSessionSchema = new mongoose.Schema(
     },
     startedAt: { type: Date },
     completedAt: { type: Date },
+    // Game outcome computed at completion
+    gameOutcome: {
+      type: String,
+      enum: ["Flawless", "Victory", "Draw", "Defeat", null],
+      default: null,
+    },
+    // Snapshot of rank result for result-screen display
+    rankResult: { type: mongoose.Schema.Types.Mixed, default: null },
   },
   { timestamps: true },
 );

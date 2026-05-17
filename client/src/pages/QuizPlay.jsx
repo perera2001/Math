@@ -5,6 +5,7 @@ import { useQuiz } from "../context/QuizContext";
 import { useAuth } from "../context/AuthContext";
 import { useUILang } from "../context/UILanguageContext";
 import GameProgressBar from "../components/GameProgressBar";
+import RankBadge, { getRankLabel, getStarsPerTier, RANK_ACCENT, LEGENDARY_SAGE_INDEX } from "../components/RankBadge";
 
 const LABELS = ["A", "B", "C", "D"];
 
@@ -14,28 +15,6 @@ const fmt = (secs) => {
     .padStart(2, "0");
   const s = (Math.abs(secs) % 60).toString().padStart(2, "0");
   return `${m}:${s}`;
-};
-
-/* Derive a pseudo rank label from score */
-const getRank = (score) => {
-  if (score >= 300) return { label: "Expert", next: null, pct: 100 };
-  if (score >= 200)
-    return {
-      label: "Advanced",
-      next: "Expert",
-      pct: Math.round(((score - 200) / 100) * 100),
-    };
-  if (score >= 100)
-    return {
-      label: "Intermediate",
-      next: "Advanced",
-      pct: Math.round(((score - 100) / 100) * 100),
-    };
-  return {
-    label: "Beginner",
-    next: "Intermediate",
-    pct: Math.round((score / 100) * 100),
-  };
 };
 
 const QuizPlay = () => {
@@ -75,9 +54,19 @@ const QuizPlay = () => {
   const [advancing, setAdvancing] = useState(false);
   const [floatingXP, setFloatingXP] = useState(null); // { score, key }
 
+  // Rank state loaded at game start for HUD display
+  const [rankStats, setRankStats] = useState(null);
+
   const timerRef = useRef(null);
   const completingRef = useRef(false);
   const [completing, setCompleting] = useState(false);
+
+  /* Load player rank stats once at game start */
+  useEffect(() => {
+    quizAPI.getStats().then((res) => {
+      setRankStats(res.data?.stats ?? res.data ?? null);
+    }).catch(() => { /* non-blocking */ });
+  }, []);
 
   /* Initialise question states when questions arrive */
   useEffect(() => {
@@ -259,11 +248,21 @@ const QuizPlay = () => {
   const timerWarning = isCountdown && timeLeft <= 120 && timeLeft > 30;
   const timerCritical = isCountdown && timeLeft <= 30;
   const answeredCount = questionStates.filter((s) => s.resolved).length;
-  const rank = getRank(score);
   const initial = user?.name?.charAt(0).toUpperCase() || "?";
-  /* Coin/gem counts derived from score as a fun display proxy */
-  const coins = score * 5;
-  const gems = Math.floor(score / 20);
+
+  // Live in-game stars (0.0–8.0): 1.0 for 1st-attempt correct, 0.5 for 2nd-attempt
+  const inGameStars = questionStates.reduce((total, qs) => {
+    if (!qs.resolved || !qs.correct) return total;
+    return total + (qs.attempts === 1 ? 1.0 : 0.5);
+  }, 0);
+
+  // Current rank from loaded stats
+  const curRankIdx = rankStats?.rankIndex ?? 0;
+  const curTier    = rankStats?.tier ?? 3;
+  const curStars   = rankStats?.starsInTier ?? 0;
+  const spp        = rankStats?.starProtectionPoints ?? 0;
+  const sbp        = rankStats?.starBonusPoints ?? 0;
+  const accentClr  = RANK_ACCENT[Math.min(curRankIdx, LEGENDARY_SAGE_INDEX)] ?? "#22c55e";
 
   return (
     <div className="ghp-page">
@@ -275,28 +274,40 @@ const QuizPlay = () => {
 
       {/* â”€â”€ TOP HUD BAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="ghp-hud">
-        {/* Left: player info */}
+        {/* Left: player info + rank badge */}
         <div className="ghp-hud-player">
-          <div className="ghp-hud-avatar" aria-hidden="true">
-            {initial}
-          </div>
+          <RankBadge
+            rankIndex={curRankIdx} tier={curTier}
+            starsInTier={curStars} size="sm"
+            showPips={false} showLabel={false}
+          />
           <div className="ghp-hud-playerinfo">
             <span className="ghp-hud-name">
               {user?.name?.split(" ")[0] || "Player"}
             </span>
-            <span className="ghp-hud-rank">{rank.label}</span>
+            <span className="ghp-hud-rank" style={{ color: accentClr, fontWeight:700 }}>
+              {getRankLabel(curRankIdx, curTier)}
+            </span>
           </div>
         </div>
 
-        {/* Center: coins / gems / streak */}
+        {/* Center: live stars / SPP shields / SBP gems / streak */}
         <div className="ghp-hud-stats">
-          <div className="ghp-stat" title={t("game_coins")}>
-            <span className="ghp-stat-icon">🪙</span>
-            <span className="ghp-stat-val">{coins}</span>
+          {/* Live in-game stars */}
+          <div className="ghp-stat" title="Stars this game">
+            <span className="ghp-stat-icon">⭐</span>
+            <span className="ghp-stat-val">{inGameStars.toFixed(1)}</span>
+            <span className="ghp-stat-label">/8.0</span>
           </div>
-          <div className="ghp-stat" title={t("game_gems")}>
+          {/* SPP shields */}
+          <div className="ghp-stat" title={t("stars_protection")}>
+            <span className="ghp-stat-icon">🛡️</span>
+            <span className="ghp-stat-val">{spp}</span>
+          </div>
+          {/* SBP gems */}
+          <div className="ghp-stat" title={t("stars_bonus")}>
             <span className="ghp-stat-icon">💎</span>
-            <span className="ghp-stat-val">{gems}</span>
+            <span className="ghp-stat-val">{sbp}</span>
           </div>
           <div
             className={`ghp-stat${streak >= 3 ? " ghp-stat--fire" : ""}`}
@@ -442,33 +453,21 @@ const QuizPlay = () => {
           <div className="ghp-rewards-card">
             <div className="ghp-rewards-title">{t("game_score_rewards")}</div>
             <div className="ghp-reward-row">
-              <span>✔ {t("game_correct_xp")}</span>
-              <span className="ghp-reward-xp">+50 XP</span>
+              <span>✔ 1st attempt correct</span>
+              <span className="ghp-reward-xp">+100 pts</span>
             </div>
             <div className="ghp-reward-row">
-              <span>⏱ {t("game_time_xp")}</span>
-              <span className="ghp-reward-xp">+20 XP</span>
+              <span>↩ 2nd attempt correct</span>
+              <span className="ghp-reward-xp">+50 pts</span>
             </div>
             <div className="ghp-reward-row">
-              <span>🔥 {t("game_streak_xp")}</span>
-              <span className="ghp-reward-xp">+10 XP</span>
+              <span>❌ Both wrong</span>
+              <span className="ghp-reward-xp">+0 pts</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* â”€â”€ RANK PROGRESS BAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      {rank.next && (
-        <div className="ghp-rank-bar">
-          <span className="ghp-rank-current">{rank.label}</span>
-          <div className="ghp-rank-track">
-            <div className="ghp-rank-fill" style={{ width: `${rank.pct}%` }} />
-          </div>
-          <span className="ghp-rank-next">
-            {t("game_rank_bar_label")} {rank.next} ({rank.pct}%)
-          </span>
-        </div>
-      )}
     </div>
   );
 };
