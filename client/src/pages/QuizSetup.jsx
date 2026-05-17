@@ -3,35 +3,36 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { quizAPI } from "../api/quizApi";
 import { useQuiz } from "../context/QuizContext";
 import { useUILang } from "../context/UILanguageContext";
+import { useAuth } from "../context/AuthContext";
 
 const LESSONS = [
   {
     value: "Geometry",
     icon: "📐",
     key: "setup_lesson_geometry",
-    color: "#3b82f6",
-    bg: "#dbeafe",
+    color: "#818cf8",
+    glow: "rgba(129,140,248,0.4)",
   },
   {
     value: "Algebra",
-    icon: "🔣",
+    icon: "🧮",
     key: "setup_lesson_algebra",
-    color: "#8b5cf6",
-    bg: "#ede9fe",
+    color: "#a78bfa",
+    glow: "rgba(167,139,250,0.4)",
   },
   {
     value: "Numbers",
     icon: "🔢",
     key: "setup_lesson_numbers",
-    color: "#14b8a6",
-    bg: "#ccfbf1",
+    color: "#34d399",
+    glow: "rgba(52,211,153,0.4)",
   },
 ];
 
 const DIFFICULTIES = [
-  { value: "Easy", color: "#10B981", bg: "#d1fae5", icon: "🟢" },
-  { value: "Medium", color: "#F59E0B", bg: "#fef3c7", icon: "🟡" },
-  { value: "Hard", color: "#EF4444", bg: "#fee2e2", icon: "🔴" },
+  { value: "Easy", color: "#10B981", glow: "rgba(16,185,129,0.4)", icon: "🟢", diffKey: "setup_diff_easy" },
+  { value: "Medium", color: "#F59E0B", glow: "rgba(245,158,11,0.4)", icon: "🟡", diffKey: "setup_diff_medium" },
+  { value: "Hard", color: "#EF4444", glow: "rgba(239,68,68,0.4)", icon: "🔴", diffKey: "setup_diff_hard" },
 ];
 
 const TIME_MODES = [
@@ -40,18 +41,24 @@ const TIME_MODES = [
     icon: "⚡",
     labelKey: "setup_time_8min",
     subKey: "setup_time_8min_sub",
+    color: "#f97316",
+    glow: "rgba(249,115,22,0.4)",
   },
   {
     value: "16min",
-    icon: "⚖️",
+    icon: "⏳",
     labelKey: "setup_time_16min",
     subKey: "setup_time_16min_sub",
+    color: "#60a5fa",
+    glow: "rgba(96,165,250,0.4)",
   },
   {
     value: "unlimited",
-    icon: "🐢",
+    icon: "♾️",
     labelKey: "setup_time_unlimited",
     subKey: "setup_time_unlimited_sub",
+    color: "#a3e635",
+    glow: "rgba(163,230,53,0.4)",
   },
 ];
 
@@ -62,9 +69,9 @@ const LANGUAGES = [
 ];
 
 const GRADE_META = {
-  9: { emoji: "📐", desc: "Foundations of secondary math" },
-  10: { emoji: "📊", desc: "Intermediate concepts & algebra" },
-  11: { emoji: "🔢", desc: "Advanced topics & exam prep" },
+  9: { emoji: "📐", color: "#818cf8" },
+  10: { emoji: "📊", color: "#f472b6" },
+  11: { emoji: "🔢", color: "#34d399" },
 };
 
 const QuizSetup = () => {
@@ -73,6 +80,7 @@ const QuizSetup = () => {
   const navigate = useNavigate();
   const { initSession } = useQuiz();
   const { t } = useUILang();
+  const { user } = useAuth();
 
   const [lesson, setLesson] = useState(null);
   const [difficulty, setDifficulty] = useState(null);
@@ -101,7 +109,7 @@ const QuizSetup = () => {
     } catch (err) {
       setError(
         err.response?.data?.message ||
-          "Failed to start quiz. Please try again.",
+          "Failed to start game. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -110,201 +118,190 @@ const QuizSetup = () => {
 
   const meta = GRADE_META[grade] || GRADE_META[9];
   const canStart = !loading && !!lesson && !!difficulty && !!timeMode;
+  const initial = user?.name?.charAt(0).toUpperCase() || "?";
 
   return (
-    <div className="sd-page qs-page">
-      {/* ── Header ───────────────────────────────────────────────── */}
-      <div className="sd-header">
-        <div className="sd-welcome-text">
-          <h1>
-            {meta.emoji} Grade {grade} — {t("setup_title")}
-          </h1>
-          <p>{t("setup_subtitle")}</p>
-        </div>
-        <button
-          className="qs-start-fab"
-          onClick={handleStart}
-          disabled={!canStart}
-        >
-          {loading ? (
-            <span className="qs-fab-spinner" />
-          ) : (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-              <polygon points="5,3 19,12 5,21" />
-            </svg>
-          )}
-          {loading ? t("setup_loading") : t("setup_start")}
-        </button>
-      </div>
+    <div className="glb-page">
+      {/* Decorative background elements */}
+      <div className="glb-bg-orb glb-bg-orb--1" />
+      <div className="glb-bg-orb glb-bg-orb--2" />
+      <div className="glb-bg-orb glb-bg-orb--3" />
 
-      {/* ── Progress pills ──────────────────────────────────────── */}
-      <div className="qs-progress">
-        {[
-          { label: "Lesson", done: !!lesson, value: lesson },
-          { label: "Difficulty", done: !!difficulty, value: difficulty },
-          { label: "Time Mode", done: !!timeMode, value: timeMode },
-          { label: "Language", done: true, value: language.toUpperCase() },
-        ].map((step) => (
-          <div
-            key={step.label}
-            className={`qs-pill${step.done ? " done" : ""}`}
-          >
-            <span className="qs-pill-check">{step.done ? "✓" : "○"}</span>
-            <span className="qs-pill-label">{step.label}</span>
-            {step.done && step.value && (
-              <span className="qs-pill-value">{step.value}</span>
-            )}
+      <div className="glb-inner">
+        {/* â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        <div className="glb-header">
+          <div className="glb-header-text">
+            <div className="glb-grade-badge" style={{ color: meta.color }}>
+              {meta.emoji} Grade {grade}
+            </div>
+            <h1 className="glb-title">{t("setup_title")}</h1>
+            <p className="glb-subtitle">{t("setup_subtitle")}</p>
           </div>
-        ))}
-      </div>
 
-      {/* ── Main Grid ───────────────────────────────────────────── */}
-      <div className="qs-grid">
-        {/* ① Lesson — cols 1-2, rows 1-2 (large teal) */}
-        <div className="sd-card sd-accent-teal qs-area-lesson">
-          <div className="sd-card-header">
-            <div className="sd-card-header-icon sd-icon-teal">📚</div>
-            <div>
-              <div className="sd-card-title">{t("setup_lesson")}</div>
-              <div className="sd-card-subtitle">
-                Choose a subject to practise
+          {/* Player chip */}
+          {user && (
+            <div className="glb-player-chip">
+              <div className="glb-player-avatar">{initial}</div>
+              <div className="glb-player-info">
+                <span className="glb-player-name">{user.name?.split(" ")[0]}</span>
+                <span className="glb-player-label">{t("setup_player_label")}</span>
               </div>
             </div>
-          </div>
-          <div className="sd-card-body qs-lesson-body">
-            {LESSONS.map(({ value, icon, key, color, bg }) => (
-              <button
-                key={value}
-                className={`qs-lesson-btn${lesson === value ? " selected" : ""}`}
-                style={{
-                  "--lc": color,
-                  "--lb": bg,
-                  borderColor: lesson === value ? color : "var(--border)",
-                  background: lesson === value ? bg : "#fff",
-                }}
-                onClick={() => setLesson(value)}
-              >
-                <span className="qs-lesson-icon">{icon}</span>
-                <div className="qs-lesson-info">
-                  <span className="qs-lesson-name">{t(key)}</span>
-                  <span
-                    className="qs-lesson-dot"
-                    style={{ background: color }}
-                  />
-                </div>
-                {lesson === value && (
-                  <span className="qs-lesson-check" style={{ color }}>
-                    ✓
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* ② Difficulty — col 3-4, row 1 (blue) */}
-        <div className="sd-card sd-accent-blue qs-area-diff">
-          <div className="sd-card-header">
-            <div className="sd-card-header-icon sd-icon-blue">🎯</div>
-            <div>
-              <div className="sd-card-title">{t("setup_difficulty")}</div>
-              <div className="sd-card-subtitle">Pick your challenge level</div>
-            </div>
-          </div>
-          <div className="sd-card-body qs-diff-body">
-            {DIFFICULTIES.map(({ value, color, bg, icon }) => (
-              <button
-                key={value}
-                className={`qs-diff-btn${difficulty === value ? " selected" : ""}`}
-                style={{
-                  borderColor: difficulty === value ? color : `${color}40`,
-                  background: difficulty === value ? bg : "transparent",
-                  color: color,
-                }}
-                onClick={() => setDifficulty(value)}
-              >
-                <span>{icon}</span>
-                <span className="qs-diff-label">{value}</span>
-                {difficulty === value && (
-                  <span className="qs-diff-tick">✓</span>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* ③ Time Mode — col 3-4, row 2 (terracotta) */}
-        <div className="sd-card sd-accent-terra qs-area-time">
-          <div className="sd-card-header">
-            <div className="sd-card-header-icon sd-icon-terra">⏱</div>
-            <div>
-              <div className="sd-card-title">{t("setup_time")}</div>
-              <div className="sd-card-subtitle">How long do you have?</div>
-            </div>
-          </div>
-          <div className="sd-card-body qs-time-body">
-            {TIME_MODES.map(({ value, icon, labelKey, subKey }) => (
-              <button
-                key={value}
-                className={`qs-time-btn${timeMode === value ? " selected" : ""}`}
-                onClick={() => setTimeMode(value)}
-              >
-                <span className="qs-time-icon">{icon}</span>
-                <div className="qs-time-info">
-                  <span className="qs-time-name">{t(labelKey)}</span>
-                  <span className="qs-time-sub">{t(subKey)}</span>
-                </div>
-                {timeMode === value && <span className="qs-time-check">✓</span>}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* ④ Language — cols 1-4, row 3 (pink) */}
-        <div className="sd-card sd-accent-pink qs-area-lang">
-          <div className="sd-card-header">
-            <div className="sd-card-header-icon sd-icon-pink">🌐</div>
-            <div>
-              <div className="sd-card-title">{t("setup_language")}</div>
-              <div className="sd-card-subtitle">{t("setup_language_hint")}</div>
-            </div>
-          </div>
-          <div className="sd-card-body qs-lang-body">
-            {LANGUAGES.map(({ value, badge, label, sub }) => (
-              <button
-                key={value}
-                className={`qs-lang-btn${language === value ? " selected" : ""}`}
-                onClick={() => setLanguage(value)}
-              >
-                <span className="qs-lang-badge">{badge}</span>
-                <div className="qs-lang-info">
-                  <span className="qs-lang-name">{label}</span>
-                  {sub !== label && <span className="qs-lang-sub">{sub}</span>}
-                </div>
-                {language === value && <span className="qs-lang-check">✓</span>}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* ── Error + Bottom Start ─────────────────────────────────── */}
-      {error && <div className="qs-error">{error}</div>}
-
-      <div className="qs-start-btn-wrap">
-        <button
-          className="qs-start-btn"
-          onClick={handleStart}
-          disabled={!canStart}
-        >
-          {loading ? (
-            <>
-              <span className="qs-fab-spinner" /> {t("setup_loading")}
-            </>
-          ) : (
-            <>&#9654; {t("setup_start")}</>
           )}
-        </button>
+        </div>
+
+        {/* â”€â”€ Step pills â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        <div className="glb-steps">
+          {[
+            { label: t("setup_lesson"), done: !!lesson, val: lesson },
+            { label: t("setup_difficulty"), done: !!difficulty, val: difficulty },
+            { label: t("setup_time"), done: !!timeMode, val: timeMode },
+            { label: t("setup_language"), done: true, val: language.toUpperCase() },
+          ].map((step) => (
+            <div key={step.label} className={`glb-step${step.done ? " done" : ""}`}>
+              <span className="glb-step-check">{step.done ? "✔" : "○"}</span>
+              <span className="glb-step-label">{step.label}</span>
+              {step.done && step.val && (
+                <span className="glb-step-val">{step.val}</span>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* â”€â”€ Selection Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        <div className="glb-grid">
+          {/* â‘  Lesson */}
+          <div className="glb-card">
+            <div className="glb-card-header">
+              <span className="glb-card-icon">📚</span>
+              <div>
+                <div className="glb-card-title">{t("setup_lesson")}</div>
+                <div className="glb-card-sub">{t("setup_lesson_sub")}</div>
+              </div>
+            </div>
+            <div className="glb-card-body">
+              {LESSONS.map(({ value, icon, key, color, glow }) => (
+                <button
+                  key={value}
+                  className={`glb-opt-btn${lesson === value ? " selected" : ""}`}
+                  style={lesson === value ? { "--opt-color": color, "--opt-glow": glow } : { "--opt-color": color, "--opt-glow": glow }}
+                  onClick={() => setLesson(value)}
+                  aria-pressed={lesson === value}
+                >
+                  <span className="glb-opt-icon">{icon}</span>
+                  <span className="glb-opt-label">{t(key)}</span>
+                  {lesson === value && <span className="glb-opt-check" style={{ color }}>✔</span>}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* â‘¡ Difficulty */}
+          <div className="glb-card">
+            <div className="glb-card-header">
+              <span className="glb-card-icon">🎯</span>
+              <div>
+                <div className="glb-card-title">{t("setup_difficulty")}</div>
+                <div className="glb-card-sub">{t("setup_difficulty_sub")}</div>
+              </div>
+            </div>
+            <div className="glb-card-body">
+              {DIFFICULTIES.map(({ value, color, glow, icon, diffKey }) => (
+                <button
+                  key={value}
+                  className={`glb-opt-btn${difficulty === value ? " selected" : ""}`}
+                  style={{ "--opt-color": color, "--opt-glow": glow }}
+                  onClick={() => setDifficulty(value)}
+                  aria-pressed={difficulty === value}
+                >
+                  <span className="glb-opt-icon">{icon}</span>
+                  <span className="glb-opt-label">{t(diffKey)}</span>
+                  {difficulty === value && <span className="glb-opt-check" style={{ color }}>✔</span>}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* â‘¢ Time Mode */}
+          <div className="glb-card">
+            <div className="glb-card-header">
+              <span className="glb-card-icon">⏱️</span>
+              <div>
+                <div className="glb-card-title">{t("setup_time")}</div>
+                <div className="glb-card-sub">{t("setup_time_sub")}</div>
+              </div>
+            </div>
+            <div className="glb-card-body">
+              {TIME_MODES.map(({ value, icon, labelKey, subKey, color, glow }) => (
+                <button
+                  key={value}
+                  className={`glb-opt-btn glb-opt-btn--time${timeMode === value ? " selected" : ""}`}
+                  style={{ "--opt-color": color, "--opt-glow": glow }}
+                  onClick={() => setTimeMode(value)}
+                  aria-pressed={timeMode === value}
+                >
+                  <span className="glb-opt-icon">{icon}</span>
+                  <div className="glb-opt-info">
+                    <span className="glb-opt-label">{t(labelKey)}</span>
+                    <span className="glb-opt-sub">{t(subKey)}</span>
+                  </div>
+                  {timeMode === value && <span className="glb-opt-check" style={{ color }}>✔</span>}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* â‘£ Language */}
+          <div className="glb-card">
+            <div className="glb-card-header">
+              <span className="glb-card-icon">🌐</span>
+              <div>
+                <div className="glb-card-title">{t("setup_language")}</div>
+                <div className="glb-card-sub">{t("setup_language_hint")}</div>
+              </div>
+            </div>
+            <div className="glb-card-body">
+              {LANGUAGES.map(({ value, badge, label, sub }) => (
+                <button
+                  key={value}
+                  className={`glb-opt-btn glb-opt-btn--lang${language === value ? " selected" : ""}`}
+                  style={{ "--opt-color": "#e879f9", "--opt-glow": "rgba(232,121,249,0.4)" }}
+                  onClick={() => setLanguage(value)}
+                  aria-pressed={language === value}
+                >
+                  <span className="glb-lang-badge">{badge}</span>
+                  <div className="glb-opt-info">
+                    <span className="glb-opt-label">{label}</span>
+                    {sub !== label && <span className="glb-opt-sub">{sub}</span>}
+                  </div>
+                  {language === value && <span className="glb-opt-check" style={{ color: "#e879f9" }}>✔</span>}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* â”€â”€ Error â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {error && <div className="glb-error" role="alert">{error}</div>}
+
+        {/* â”€â”€ Start Game Button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        <div className="glb-start-wrap">
+          <button
+            className={`glb-start-btn${canStart ? " ready" : ""}`}
+            onClick={handleStart}
+            disabled={!canStart}
+            aria-label={t("setup_start")}
+          >
+            {loading ? (
+              <>
+                <span className="glb-spinner" />
+                {t("setup_loading")}
+              </>
+            ) : (
+              t("setup_start")
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );
