@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { quizAPI } from "../api/quizApi";
 import { useAuth } from "../context/AuthContext";
 import { useUILang } from "../context/UILanguageContext";
+import RankBadge, { LEGENDARY_SAGE_INDEX } from "../components/RankBadge";
 
 const SUBJECTS = [
   { key: "all", label: "All Subjects", icon: "🌐", accent: "teal" },
@@ -169,9 +170,32 @@ export default function Leaderboard() {
                             {isMe && <span className="lb-you-badge">You</span>}
                           </span>
                         </span>
-                        <span className="lb-col lb-col-stars lb-stat-primary">
-                          {getDisplayStat(entry)}
-                          <span className="lb-star-icon">★</span>
+                        <span
+                          className="lb-col lb-col-stars lb-stat-primary"
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.4rem",
+                          }}
+                        >
+                          {activeSubject === "all" &&
+                          entry.rankIndex != null ? (
+                            <RankBadge
+                              rankIndex={Math.min(
+                                entry.rankIndex ?? 0,
+                                LEGENDARY_SAGE_INDEX,
+                              )}
+                              tier={entry.tier ?? 3}
+                              starsInTier={entry.starsInTier ?? 0}
+                              size="sm"
+                              showPips={false}
+                            />
+                          ) : (
+                            <>
+                              {getDisplayStat(entry)}
+                              <span className="lb-star-icon">★</span>
+                            </>
+                          )}
                         </span>
                         <span className="lb-col lb-col-score lb-stat-secondary">
                           {getSecondStat(entry)}
