@@ -5,6 +5,7 @@ const {
   answer,
   lifeline,
   complete,
+  abandon,
   history,
   stats,
   result,
@@ -21,6 +22,7 @@ router.post("/start", start);
 router.post("/answer", answer);
 router.post("/lifeline", lifeline);
 router.post("/complete", complete);
+router.post("/abandon", abandon);
 router.post("/explain-answer", explainAnswer);
 router.get("/history", history);
 router.get("/stats", stats);

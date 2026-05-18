@@ -171,11 +171,28 @@ const leaderboard = async (req, res, next) => {
   }
 };
 
+const abandon = async (req, res, next) => {
+  try {
+    const { sessionId } = req.body;
+    if (!sessionId) {
+      return res.status(400).json({ message: "sessionId is required" });
+    }
+    const result = await quizService.abandonQuiz({
+      sessionId,
+      userId: req.user.id,
+    });
+    return res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   start,
   answer,
   lifeline,
   complete,
+  abandon,
   history,
   stats,
   result,

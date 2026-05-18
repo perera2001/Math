@@ -504,11 +504,87 @@ const getLeaderboard = async ({ lesson } = {}) => {
   }));
 };
 
+// ── abandonQuiz ──────────────────────────────────────────────────────────────
+const abandonQuiz = async ({ sessionId, userId }) => {
+  const session = await QuizSession.findById(sessionId);
+
+  if (!session || session.userId.toString() !== String(userId)) {
+    const err = new Error("Session not found");
+    err.statusCode = 404;
+    throw err;
+  }
+
+  if (session.status !== "in_progress") {
+    return { alreadyEnded: true };
+  }
+
+  session.status = "abandoned";
+  session.completedAt = new Date();
+  await session.save();
+
+  // Apply penalty: Defeat outcome (score=0) + extra −2 coins and −1 SBP for quitting
+  let statsDoc = await UserStats.findOne({ userId });
+  if (!statsDoc) {
+    statsDoc = await UserStats.create({ userId });
+  }
+
+  const currentRankState = {
+    rankIndex: statsDoc.rankIndex,
+    tier: statsDoc.tier,
+    starsInTier: statsDoc.starsInTier,
+    starProtectionPoints: statsDoc.starProtectionPoints,
+    starBonusPoints: statsDoc.starBonusPoints,
+    lifetimeStarsEarned: statsDoc.lifetimeStarsEarned,
+    legendarySageStars: statsDoc.legendarySageStars,
+    profileLevel: statsDoc.profileLevel,
+    profileXP: statsDoc.profileXP,
+    coins: statsDoc.coins,
+  };
+
+  // Abandon bypasses SPP protection — a deliberate quit always costs 1 star.
+  // Pass SPP=0 so resolveGameResult treats this as an unprotected Defeat,
+  // then restore the real SPP value (protection is neither consumed nor rewarded).
+  const stateForAbandon = { ...currentRankState, starProtectionPoints: 0 };
+  const { newState, gameResult } = resolveGameResult(stateForAbandon, 0);
+  // Keep actual SPP unchanged (shield was not involved)
+  newState.starProtectionPoints = currentRankState.starProtectionPoints;
+
+  // Extra quit penalties on top of Defeat
+  newState.coins = Math.max(0, newState.coins - 2);
+  newState.starBonusPoints = Math.max(0, newState.starBonusPoints - 1);
+
+  await UserStats.findOneAndUpdate(
+    { userId },
+    {
+      $set: {
+        rankIndex: newState.rankIndex,
+        tier: newState.tier,
+        starsInTier: newState.starsInTier,
+        starProtectionPoints: newState.starProtectionPoints,
+        starBonusPoints: newState.starBonusPoints,
+        lifetimeStarsEarned: newState.lifetimeStarsEarned,
+        legendarySageStars: newState.legendarySageStars,
+        profileLevel: newState.profileLevel,
+        profileXP: newState.profileXP,
+        coins: newState.coins,
+      },
+    },
+    { upsert: true },
+  );
+
+  return {
+    abandoned: true,
+    protectionUsed: gameResult.protectionUsed,
+    rankStarChange: gameResult.rankStarChange,
+  };
+};
+
 module.exports = {
   startQuiz,
   answerQuestion,
   useLifeline,
   completeQuiz,
+  abandonQuiz,
   getHistory,
   getStats,
   getResultBySession,
