@@ -22,6 +22,7 @@ import Leaderboard from "./pages/Leaderboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
 import LandingPage from "./pages/LandingPage";
+import DocsPage from "./pages/DocsPage";
 
 const AppRoutes = () => {
   const { user, loading } = useAuth();
@@ -116,6 +117,7 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         />
+        <Route path="/docs" element={<DocsPage />} />
         <Route
           path="/"
           element={
