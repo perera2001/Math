@@ -204,10 +204,10 @@ function resolveGameResult(currentState, gamePoints) {
 
   // ── STEP 4: Defeat protection ───────────────────────────────────────────
   if (outcome === "Defeat" && state.starProtectionPoints > 0) {
-    state.starProtectionPoints -= 1; // consume
+    state.starProtectionPoints -= 1; // permanently consume 1 SPP
     protectionUsed = true;
     rankStarChange = 0; // no star lost
-    sppGain = 1; // re-gain 1 SPP (builds back up)
+    sppGain = 0; // protection was consumed — do NOT re-add it
   }
 
   // Snapshot before applying changes (for GameResult reporting)
