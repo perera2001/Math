@@ -143,9 +143,14 @@ const QuizResults = () => {
     const target = rr.rankStarsAfter ?? 0;
     const start  = rr.rankStarsBefore ?? 0;
     setDisplayedStars(start);
+    if (start === target) {
+      if (rr.rankChanged) setTimeout(() => setShowRankModal(true), 600);
+      return;
+    }
+    const step = target > start ? 1 : -1;
     let cur = start;
     animRef.current = setInterval(() => {
-      cur = (rr.rankStarsBefore < rr.rankStarsAfter) ? cur + 1 : cur - 1;
+      cur += step;
       setDisplayedStars(cur);
       if (cur === target) {
         clearInterval(animRef.current);
