@@ -157,7 +157,11 @@ function resolveGameResult(currentState, gamePoints) {
     bonusBoosted = true;
   }
   // Flawless with all 5 diamonds → full-cap drain: spend all, reset to 0
-  if (outcome === "Flawless" && !bonusBoosted && state.starBonusPoints >= SBP_CAP) {
+  if (
+    outcome === "Flawless" &&
+    !bonusBoosted &&
+    state.starBonusPoints >= SBP_CAP
+  ) {
     state.starBonusPoints = 0;
     bonusBoosted = true;
   }

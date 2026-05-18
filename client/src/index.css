@@ -5800,7 +5800,9 @@ body {
   font-size: 0.78rem;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
   white-space: nowrap;
   align-self: center;
 }
@@ -5893,7 +5895,9 @@ body {
   font-size: 0.92rem;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
 .ghp-exit-cancel-btn:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.08);
