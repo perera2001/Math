@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+
+const ABANDON_URL = `${import.meta.env.VITE_API_URL || "http://localhost:5000/api"}/quiz/abandon`;
 import { quizAPI } from "../api/quizApi";
 import { useQuiz } from "../context/QuizContext";
 import { useAuth } from "../context/AuthContext";
@@ -65,6 +67,41 @@ const QuizPlay = () => {
   const timerRef = useRef(null);
   const completingRef = useRef(false);
   const [completing, setCompleting] = useState(false);
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
+
+  // ── Guard: back button (popstate) + all <Link>/anchor clicks ────────────
+  useEffect(() => {
+    // Push a sentinel so the first back-press fires popstate instead of leaving
+    window.history.pushState({ quizGuard: true }, "");
+
+    const onPopState = () => {
+      if (completingRef.current) return;
+      // Re-push so repeated back-presses keep getting caught
+      window.history.pushState({ quizGuard: true }, "");
+      setShowExitConfirm(true);
+    };
+
+    // Intercept any <a href> click (covers React Router <Link> and Navbar)
+    const onAnchorClick = (e) => {
+      if (completingRef.current) return;
+      const anchor = e.target.closest("a[href]");
+      if (!anchor) return;
+      const href = anchor.getAttribute("href") || "";
+      // Only intercept internal page-change links
+      if (!href.startsWith("#") && href !== window.location.pathname) {
+        e.preventDefault();
+        e.stopPropagation();
+        setShowExitConfirm(true);
+      }
+    };
+
+    window.addEventListener("popstate", onPopState);
+    document.addEventListener("click", onAnchorClick, true); // capture phase
+    return () => {
+      window.removeEventListener("popstate", onPopState);
+      document.removeEventListener("click", onAnchorClick, true);
+    };
+  }, []);
 
   /* Load player rank stats once at game start */
   useEffect(() => {
@@ -110,7 +147,25 @@ const QuizPlay = () => {
     }
   }, [paramId, elapsedRef, navigate]);
 
-  /* â”€â”€ Timer effect â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+  /* ── Abandon quiz (quit with penalty) ─────────────────────────────────────── */
+  const handleExit = useCallback(async () => {
+    if (completingRef.current) return;
+    completingRef.current = true;
+    clearInterval(timerRef.current);
+    setCompleting(true);
+    try {
+      await quizAPI.abandon({ sessionId: paramId });
+    } catch {
+      /* silently ignore — penalty is best-effort */
+    }
+    navigate("/student/dashboard", { replace: true });
+  }, [paramId, navigate]);
+
+  /* ── Cancel exit (Keep Playing) ──────────────────────────────────────────── */
+  const handleCancelExit = useCallback(() => {
+    setShowExitConfirm(false);
+  }, []);
+
   const handleTimeUp = useCallback(() => {
     triggerComplete();
   }, [triggerComplete]);
@@ -136,15 +191,29 @@ const QuizPlay = () => {
     return () => clearInterval(timerRef.current);
   }, [sessionId, timeMode, handleTimeUp, elapsedRef]);
 
-  /* Warn before leaving */
+  /* Warn before leaving + best-effort abandon on tab close / hard refresh */
   useEffect(() => {
     const handler = (e) => {
+      if (completingRef.current) return;
       e.preventDefault();
       e.returnValue = "";
+      // keepalive fetch so the abandon fires even as the page unloads
+      const token = localStorage.getItem("token");
+      if (token && paramId) {
+        fetch(ABANDON_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ sessionId: paramId }),
+          keepalive: true,
+        }).catch(() => {});
+      }
     };
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
-  }, []);
+  }, [paramId]);
 
   /* â”€â”€ Answer selection â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
   const handleSelect = useCallback(
@@ -353,6 +422,16 @@ const QuizPlay = () => {
             {timeMode === "unlimited" ? `+${fmt(timeLeft)}` : fmt(timeLeft)}
           </div>
         </div>
+
+        {/* Exit quiz button */}
+        <button
+          className="ghp-exit-btn"
+          onClick={() => setShowExitConfirm(true)}
+          disabled={completing}
+          aria-label="Exit quiz"
+        >
+          ✕ Exit
+        </button>
       </div>
 
       {/* â”€â”€ MAIN GAME AREA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
@@ -489,6 +568,38 @@ const QuizPlay = () => {
           </div>
         </div>
       </div>
+
+      {/* ── EXIT CONFIRMATION MODAL ─────────────────────────────────────────────── */}
+      {showExitConfirm && (
+        <div className="ghp-exit-modal-backdrop">
+          <div className="ghp-exit-modal">
+            <div className="ghp-exit-modal-icon">⚠️</div>
+            <h3 className="ghp-exit-modal-title">Quit Quiz?</h3>
+            <p className="ghp-exit-modal-desc">You will lose:</p>
+            <ul className="ghp-exit-modal-list">
+              <li>🌟 1 rank star</li>
+              <li>💎 1 bonus point</li>
+              <li>🪙 2 coins</li>
+            </ul>
+            <div className="ghp-exit-modal-btns">
+              <button
+                className="ghp-exit-confirm-btn"
+                onClick={handleExit}
+                disabled={completing}
+              >
+                Yes, Quit
+              </button>
+              <button
+                className="ghp-exit-cancel-btn"
+                onClick={handleCancelExit}
+                disabled={completing}
+              >
+                Keep Playing
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
