@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { LoginModal, RegisterModal } from "../components/AuthModals";
 
 /* ══════════════════════════════════════════════════════════════════
@@ -350,6 +351,9 @@ const LandingPage = () => {
             <button className="lp-footer-link" onClick={openRegister}>
               Register
             </button>
+            <Link to="/docs" className="lp-footer-link" style={{ textDecoration: "none" }}>
+              Docs
+            </Link>
           </div>
         </div>
       </footer>
