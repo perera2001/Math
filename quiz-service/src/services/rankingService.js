@@ -30,6 +30,7 @@
  *
  * SBP AUTO-REDEMPTION (checked before rewards applied):
  *   On Victory: if SBP >= 3 → spend 3 SBP → upgrade to Flawless rewards ("Bonus-Boosted")
+ *   On Flawless: if SBP = 5 (cap) → spend ALL 5 SBP → drain to 0, then rebuild
  *
  * DEFEAT LOGIC:
  *   if SPP > 0 : consume 1 SPP → 0 stars lost → gain +1 SPP (net unchanged or capped)
@@ -148,10 +149,16 @@ function resolveGameResult(currentState, gamePoints) {
   let bonusBoosted = false;
   let protectionUsed = false;
 
-  // ── STEP 2: SBP auto-redemption on Victory ─────────────────────────────
+  // ── STEP 2: SBP auto-redemption ──────────────────────────────────────────
+  // Victory with 3+ diamonds → upgrade to Flawless
   if (outcome === "Victory" && state.starBonusPoints >= 3) {
     state.starBonusPoints -= 3;
     outcome = "Flawless";
+    bonusBoosted = true;
+  }
+  // Flawless with all 5 diamonds → full-cap drain: spend all, reset to 0
+  if (outcome === "Flawless" && !bonusBoosted && state.starBonusPoints >= SBP_CAP) {
+    state.starBonusPoints = 0;
     bonusBoosted = true;
   }
 
@@ -166,7 +173,9 @@ function resolveGameResult(currentState, gamePoints) {
     case "Flawless":
       xpAwarded = 200;
       coinsAwarded = 5;
-      sbpGain = 2;
+      // Boosted Flawless: no SBP gain (let it drain and rebuild from zero)
+      // Real Flawless: +1 SBP (slower fill so bonus feels earned, not permanent)
+      sbpGain = bonusBoosted ? 0 : 1;
       rankStarChange = 2;
       break;
     case "Victory":

@@ -36,6 +36,7 @@ export const quizAPI = {
   answer: (data) => quizApi.post("/quiz/answer", data),
   lifeline: (data) => quizApi.post("/quiz/lifeline", data),
   complete: (data) => quizApi.post("/quiz/complete", data),
+  abandon: (data) => quizApi.post("/quiz/abandon", data),
   getResult: (sessionId) => quizApi.get(`/quiz/result/${sessionId}`),
   explainAnswer: (data) => quizApi.post("/quiz/explain-answer", data),
   getHistory: () => quizApi.get("/quiz/history"),
