@@ -1,683 +1,1187 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MathsApp — Ranking & Quiz Point System</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MathsApp — Ranking & Quiz Point System</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap");
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-    body {
-      font-family: 'Inter', Arial, sans-serif;
-      background: #f8fafc;
-      color: #1e293b;
-      line-height: 1.7;
-      padding: 0;
-    }
+      body {
+        font-family: "Inter", Arial, sans-serif;
+        background: #f8fafc;
+        color: #1e293b;
+        line-height: 1.7;
+        padding: 0;
+      }
 
-    .page {
-      max-width: 900px;
-      margin: 0 auto;
-      background: #ffffff;
-      padding: 60px 70px;
-    }
+      .page {
+        max-width: 900px;
+        margin: 0 auto;
+        background: #ffffff;
+        padding: 60px 70px;
+      }
 
-    /* ── COVER HEADER ── */
-    .cover {
-      text-align: center;
-      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
-      color: #fff;
-      padding: 50px 40px 40px;
-      border-radius: 18px;
-      margin-bottom: 50px;
-    }
-    .cover .app-name {
-      font-size: 13px;
-      letter-spacing: 4px;
-      text-transform: uppercase;
-      color: #a5b4fc;
-      margin-bottom: 10px;
-      font-weight: 600;
-    }
-    .cover h1 {
-      font-size: 32px;
-      font-weight: 900;
-      color: #fff;
-      margin-bottom: 12px;
-      line-height: 1.2;
-    }
-    .cover p {
-      font-size: 15px;
-      color: #c7d2fe;
-      max-width: 560px;
-      margin: 0 auto;
-    }
-    .cover .badge {
-      display: inline-block;
-      background: rgba(255,255,255,0.15);
-      border: 1px solid rgba(255,255,255,0.3);
-      border-radius: 999px;
-      padding: 5px 18px;
-      font-size: 12px;
-      color: #e0e7ff;
-      margin-top: 20px;
-      letter-spacing: 1px;
-    }
-
-    /* ── SECTION HEADERS ── */
-    .section {
-      margin-bottom: 46px;
-    }
-    .section-title {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 20px;
-      font-weight: 800;
-      color: #1e293b;
-      margin-bottom: 18px;
-      padding-bottom: 12px;
-      border-bottom: 2.5px solid #e2e8f0;
-    }
-    .section-title .num {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      background: #4338ca;
-      color: #fff;
-      font-size: 14px;
-      font-weight: 800;
-      flex-shrink: 0;
-    }
-
-    /* ── TABLES ── */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 14px 0 6px;
-      font-size: 14px;
-    }
-    thead tr {
-      background: #1e1b4b;
-      color: #fff;
-    }
-    thead th {
-      padding: 11px 14px;
-      text-align: left;
-      font-weight: 700;
-      font-size: 13px;
-      letter-spacing: 0.3px;
-    }
-    tbody tr:nth-child(even) { background: #f8fafc; }
-    tbody tr:hover { background: #f1f5f9; }
-    tbody td {
-      padding: 10px 14px;
-      border-bottom: 1px solid #e2e8f0;
-      font-size: 13.5px;
-    }
-    .badge-outcome {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 700;
-    }
-    .flawless  { background: #fef3c7; color: #92400e; }
-    .victory   { background: #dbeafe; color: #1e40af; }
-    .draw      { background: #f1f5f9; color: #475569; }
-    .defeat    { background: #fee2e2; color: #991b1b; }
-
-    /* ── CALLOUT BOXES ── */
-    .callout {
-      border-left: 4px solid #4338ca;
-      background: #eef2ff;
-      border-radius: 0 10px 10px 0;
-      padding: 14px 18px;
-      margin: 14px 0;
-      font-size: 14px;
-    }
-    .callout.green  { border-color: #059669; background: #d1fae5; }
-    .callout.red    { border-color: #dc2626; background: #fee2e2; }
-    .callout.yellow { border-color: #d97706; background: #fef3c7; }
-    .callout strong { font-weight: 700; }
-
-    /* ── FORMULA BOX ── */
-    .formula {
-      display: block;
-      background: #1e293b;
-      color: #7dd3fc;
-      font-family: 'Courier New', monospace;
-      font-size: 14px;
-      padding: 14px 20px;
-      border-radius: 10px;
-      margin: 14px 0;
-      letter-spacing: 0.5px;
-    }
-
-    /* ── RANK GRID ── */
-    .rank-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin: 14px 0;
-    }
-    .rank-card {
-      background: #f8fafc;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 14px 16px;
-      text-align: center;
-    }
-    .rank-card .rank-name { font-weight: 800; font-size: 14px; color: #1e293b; }
-    .rank-card .stars-info { font-size: 12px; color: #64748b; margin-top: 4px; }
-    .rank-card .rank-index { font-size: 11px; color: #94a3b8; }
-    .rank-card.prestige {
-      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-      border-color: #f59e0b;
-      grid-column: span 3;
-    }
-    .rank-card.prestige .rank-name { color: #92400e; font-size: 16px; }
-
-    /* ── SPP EXAMPLE TIMELINE ── */
-    .timeline {
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-      margin: 14px 0;
-    }
-    .timeline-row {
-      display: grid;
-      grid-template-columns: 60px 90px 80px 80px 1fr;
-      align-items: center;
-      gap: 10px;
-      padding: 9px 14px;
-      border-bottom: 1px solid #e2e8f0;
-      font-size: 13px;
-    }
-    .timeline-row.header {
-      background: #1e1b4b;
-      color: #fff;
-      font-weight: 700;
-      font-size: 12px;
-      letter-spacing: 0.3px;
-      border-radius: 8px 8px 0 0;
-    }
-    .timeline-row:last-child { border-bottom: none; border-radius: 0 0 8px 8px; }
-    .timeline-row:nth-child(even):not(.header) { background: #f8fafc; }
-    .star-lost { color: #dc2626; font-weight: 700; }
-    .star-saved { color: #059669; font-weight: 700; }
-
-    /* ── WORKED EXAMPLE ── */
-    .example-block {
-      background: #f8fafc;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 14px;
-      padding: 22px 24px;
-      margin: 14px 0;
-    }
-    .example-block h4 {
-      font-size: 14px;
-      font-weight: 700;
-      color: #4338ca;
-      margin-bottom: 12px;
-      letter-spacing: 0.3px;
-    }
-    .example-step {
-      display: flex;
-      gap: 12px;
-      align-items: flex-start;
-      margin-bottom: 10px;
-      font-size: 13.5px;
-    }
-    .step-dot {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: #4338ca;
-      color: #fff;
-      font-size: 11px;
-      font-weight: 800;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
-
-    /* ── LEVEL TABLE ── */
-    .level-row { }
-
-    /* ── FOOTER ── */
-    .footer {
-      margin-top: 60px;
-      padding-top: 20px;
-      border-top: 2px solid #e2e8f0;
-      text-align: center;
-      font-size: 12px;
-      color: #94a3b8;
-    }
-
-    /* ── PRINT STYLES ── */
-    @media print {
-      body { background: #fff; }
-      .page { padding: 40px 50px; max-width: 100%; }
-      .section { page-break-inside: avoid; }
-      .rank-grid { page-break-inside: avoid; }
-      .example-block { page-break-inside: avoid; }
-      table { page-break-inside: avoid; }
+      /* ── COVER HEADER ── */
       .cover {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
+        text-align: center;
+        background: linear-gradient(
+          135deg,
+          #1e1b4b 0%,
+          #312e81 50%,
+          #4338ca 100%
+        );
+        color: #fff;
+        padding: 50px 40px 40px;
+        border-radius: 18px;
+        margin-bottom: 50px;
+      }
+      .cover .app-name {
+        font-size: 13px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: #a5b4fc;
+        margin-bottom: 10px;
+        font-weight: 600;
+      }
+      .cover h1 {
+        font-size: 32px;
+        font-weight: 900;
+        color: #fff;
+        margin-bottom: 12px;
+        line-height: 1.2;
+      }
+      .cover p {
+        font-size: 15px;
+        color: #c7d2fe;
+        max-width: 560px;
+        margin: 0 auto;
+      }
+      .cover .badge {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 999px;
+        padding: 5px 18px;
+        font-size: 12px;
+        color: #e0e7ff;
+        margin-top: 20px;
+        letter-spacing: 1px;
+      }
+
+      /* ── SECTION HEADERS ── */
+      .section {
+        margin-bottom: 46px;
+      }
+      .section-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 20px;
+        font-weight: 800;
+        color: #1e293b;
+        margin-bottom: 18px;
+        padding-bottom: 12px;
+        border-bottom: 2.5px solid #e2e8f0;
+      }
+      .section-title .num {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: #4338ca;
+        color: #fff;
+        font-size: 14px;
+        font-weight: 800;
+        flex-shrink: 0;
+      }
+
+      /* ── TABLES ── */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 14px 0 6px;
+        font-size: 14px;
       }
       thead tr {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
+        background: #1e1b4b;
+        color: #fff;
       }
-    }
-  </style>
-</head>
-<body>
-<div class="page">
+      thead th {
+        padding: 11px 14px;
+        text-align: left;
+        font-weight: 700;
+        font-size: 13px;
+        letter-spacing: 0.3px;
+      }
+      tbody tr:nth-child(even) {
+        background: #f8fafc;
+      }
+      tbody tr:hover {
+        background: #f1f5f9;
+      }
+      tbody td {
+        padding: 10px 14px;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 13.5px;
+      }
+      .badge-outcome {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .flawless {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .victory {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+      .draw {
+        background: #f1f5f9;
+        color: #475569;
+      }
+      .defeat {
+        background: #fee2e2;
+        color: #991b1b;
+      }
 
-  <!-- COVER -->
-  <div class="cover">
-    <div class="app-name">MathsApp — Internal Documentation</div>
-    <h1>Ranking &amp; Quiz Point System</h1>
-    <p>A complete reference guide covering quiz scoring, game outcomes, rank structure, star progression, protection shields, bonus boosts, and profile XP.</p>
-    <div class="badge">Version 2.0 &nbsp;·&nbsp; May 2026</div>
-  </div>
+      /* ── CALLOUT BOXES ── */
+      .callout {
+        border-left: 4px solid #4338ca;
+        background: #eef2ff;
+        border-radius: 0 10px 10px 0;
+        padding: 14px 18px;
+        margin: 14px 0;
+        font-size: 14px;
+      }
+      .callout.green {
+        border-color: #059669;
+        background: #d1fae5;
+      }
+      .callout.red {
+        border-color: #dc2626;
+        background: #fee2e2;
+      }
+      .callout.yellow {
+        border-color: #d97706;
+        background: #fef3c7;
+      }
+      .callout strong {
+        font-weight: 700;
+      }
 
-  <!-- PART 1: QUIZ SCORING -->
-  <div class="section">
-    <div class="section-title"><span class="num">1</span> Quiz Scoring (Per Game)</div>
-    <p style="font-size:14px; color:#475569; margin-bottom:14px;">
-      Every quiz contains exactly <strong>8 questions</strong>. Each question allows up to <strong>2 answer attempts</strong>.
-      Points are awarded per question based on how many attempts were needed:
-    </p>
-    <table>
-      <thead><tr><th>Attempt Result</th><th>Points Awarded</th><th>Notes</th></tr></thead>
-      <tbody>
-        <tr><td>Correct on 1st attempt</td><td><strong>+100 pts</strong></td><td>Full marks</td></tr>
-        <tr><td>Correct on 2nd attempt</td><td><strong>+50 pts</strong></td><td>Half marks</td></tr>
-        <tr><td>Wrong on both attempts</td><td><strong>0 pts</strong></td><td>No marks</td></tr>
-      </tbody>
-    </table>
-    <code class="formula">Maximum Score = 8 questions × 100 pts = 800 pts</code>
-    <code class="formula">Game Percent  = (Game Points ÷ 800) × 100</code>
-    <div class="callout yellow">
-      <strong>Example:</strong> A player gets 6 questions correct on the first try and 1 correct on the second try, and misses 1.
-      Score = (6 × 100) + (1 × 50) + (1 × 0) = <strong>650 pts</strong> = <strong>81.25%</strong>
+      /* ── FORMULA BOX ── */
+      .formula {
+        display: block;
+        background: #1e293b;
+        color: #7dd3fc;
+        font-family: "Courier New", monospace;
+        font-size: 14px;
+        padding: 14px 20px;
+        border-radius: 10px;
+        margin: 14px 0;
+        letter-spacing: 0.5px;
+      }
+
+      /* ── RANK GRID ── */
+      .rank-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin: 14px 0;
+      }
+      .rank-card {
+        background: #f8fafc;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 14px 16px;
+        text-align: center;
+      }
+      .rank-card .rank-name {
+        font-weight: 800;
+        font-size: 14px;
+        color: #1e293b;
+      }
+      .rank-card .stars-info {
+        font-size: 12px;
+        color: #64748b;
+        margin-top: 4px;
+      }
+      .rank-card .rank-index {
+        font-size: 11px;
+        color: #94a3b8;
+      }
+      .rank-card.prestige {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        border-color: #f59e0b;
+        grid-column: span 3;
+      }
+      .rank-card.prestige .rank-name {
+        color: #92400e;
+        font-size: 16px;
+      }
+
+      /* ── SPP EXAMPLE TIMELINE ── */
+      .timeline {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        margin: 14px 0;
+      }
+      .timeline-row {
+        display: grid;
+        grid-template-columns: 60px 90px 80px 80px 1fr;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 14px;
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 13px;
+      }
+      .timeline-row.header {
+        background: #1e1b4b;
+        color: #fff;
+        font-weight: 700;
+        font-size: 12px;
+        letter-spacing: 0.3px;
+        border-radius: 8px 8px 0 0;
+      }
+      .timeline-row:last-child {
+        border-bottom: none;
+        border-radius: 0 0 8px 8px;
+      }
+      .timeline-row:nth-child(even):not(.header) {
+        background: #f8fafc;
+      }
+      .star-lost {
+        color: #dc2626;
+        font-weight: 700;
+      }
+      .star-saved {
+        color: #059669;
+        font-weight: 700;
+      }
+
+      /* ── WORKED EXAMPLE ── */
+      .example-block {
+        background: #f8fafc;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 22px 24px;
+        margin: 14px 0;
+      }
+      .example-block h4 {
+        font-size: 14px;
+        font-weight: 700;
+        color: #4338ca;
+        margin-bottom: 12px;
+        letter-spacing: 0.3px;
+      }
+      .example-step {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        margin-bottom: 10px;
+        font-size: 13.5px;
+      }
+      .step-dot {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #4338ca;
+        color: #fff;
+        font-size: 11px;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+
+      /* ── LEVEL TABLE ── */
+      .level-row {
+      }
+
+      /* ── FOOTER ── */
+      .footer {
+        margin-top: 60px;
+        padding-top: 20px;
+        border-top: 2px solid #e2e8f0;
+        text-align: center;
+        font-size: 12px;
+        color: #94a3b8;
+      }
+
+      /* ── PRINT STYLES ── */
+      @media print {
+        body {
+          background: #fff;
+        }
+        .page {
+          padding: 40px 50px;
+          max-width: 100%;
+        }
+        .section {
+          page-break-inside: avoid;
+        }
+        .rank-grid {
+          page-break-inside: avoid;
+        }
+        .example-block {
+          page-break-inside: avoid;
+        }
+        table {
+          page-break-inside: avoid;
+        }
+        .cover {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        thead tr {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <!-- COVER -->
+      <div class="cover">
+        <div class="app-name">MathsApp — Internal Documentation</div>
+        <h1>Ranking &amp; Quiz Point System</h1>
+        <p>
+          A complete reference guide covering quiz scoring, game outcomes, rank
+          structure, star progression, protection shields, bonus boosts, and
+          profile XP.
+        </p>
+        <div class="badge">Version 2.0 &nbsp;·&nbsp; May 2026</div>
+      </div>
+
+      <!-- PART 1: QUIZ SCORING -->
+      <div class="section">
+        <div class="section-title">
+          <span class="num">1</span> Quiz Scoring (Per Game)
+        </div>
+        <p style="font-size: 14px; color: #475569; margin-bottom: 14px">
+          Every quiz contains exactly <strong>8 questions</strong>. Each
+          question allows up to <strong>2 answer attempts</strong>. Points are
+          awarded per question based on how many attempts were needed:
+        </p>
+        <table>
+          <thead>
+            <tr>
+              <th>Attempt Result</th>
+              <th>Points Awarded</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Correct on 1st attempt</td>
+              <td><strong>+100 pts</strong></td>
+              <td>Full marks</td>
+            </tr>
+            <tr>
+              <td>Correct on 2nd attempt</td>
+              <td><strong>+50 pts</strong></td>
+              <td>Half marks</td>
+            </tr>
+            <tr>
+              <td>Wrong on both attempts</td>
+              <td><strong>0 pts</strong></td>
+              <td>No marks</td>
+            </tr>
+          </tbody>
+        </table>
+        <code class="formula"
+          >Maximum Score = 8 questions × 100 pts = 800 pts</code
+        >
+        <code class="formula">Game Percent = (Game Points ÷ 800) × 100</code>
+        <div class="callout yellow">
+          <strong>Example:</strong> A player gets 6 questions correct on the
+          first try and 1 correct on the second try, and misses 1. Score = (6 ×
+          100) + (1 × 50) + (1 × 0) = <strong>650 pts</strong> =
+          <strong>81.25%</strong>
+        </div>
+      </div>
+
+      <!-- PART 2: GAME OUTCOMES -->
+      <div class="section">
+        <div class="section-title">
+          <span class="num">2</span> Game Outcomes
+        </div>
+        <p style="font-size: 14px; color: #475569; margin-bottom: 14px">
+          The game percentage determines the <strong>outcome</strong>, which
+          drives all rank star changes and rewards:
+        </p>
+        <table>
+          <thead>
+            <tr>
+              <th>Outcome</th>
+              <th>Score Threshold</th>
+              <th>Min Points</th>
+              <th>Rank Stars</th>
+              <th>XP</th>
+              <th>Coins</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="badge-outcome flawless">🌟 Flawless</span></td>
+              <td>≥ 87.5%</td>
+              <td>≥ 700 pts</td>
+              <td><strong>+2</strong></td>
+              <td>+200</td>
+              <td>+5</td>
+            </tr>
+            <tr>
+              <td><span class="badge-outcome victory">✅ Victory</span></td>
+              <td>≥ 62.5%</td>
+              <td>≥ 500 pts</td>
+              <td><strong>+1</strong></td>
+              <td>+120</td>
+              <td>+3</td>
+            </tr>
+            <tr>
+              <td><span class="badge-outcome draw">🤝 Draw</span></td>
+              <td>≥ 37.5%</td>
+              <td>≥ 300 pts</td>
+              <td><strong>0</strong></td>
+              <td>+60</td>
+              <td>+1</td>
+            </tr>
+            <tr>
+              <td><span class="badge-outcome defeat">❌ Defeat</span></td>
+              <td>&lt; 37.5%</td>
+              <td>&lt; 300 pts</td>
+              <td><strong>−1</strong> (see SPP)</td>
+              <td>+30</td>
+              <td>0</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="callout">
+          <strong>Note:</strong> XP is always awarded regardless of outcome, so
+          every game contributes to your profile level even on a Defeat.
+        </div>
+
+        <h3
+          style="
+            font-size: 15px;
+            font-weight: 700;
+            margin: 22px 0 10px;
+            color: #1e293b;
+          "
+        >
+          Quick Score Reference
+        </h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Questions Correct (all 1st attempt)</th>
+              <th>Score</th>
+              <th>%</th>
+              <th>Outcome</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>8 / 8</td>
+              <td>800 pts</td>
+              <td>100%</td>
+              <td><span class="badge-outcome flawless">Flawless</span></td>
+            </tr>
+            <tr>
+              <td>7 / 8</td>
+              <td>700 pts</td>
+              <td>87.5%</td>
+              <td><span class="badge-outcome flawless">Flawless</span></td>
+            </tr>
+            <tr>
+              <td>6 / 8</td>
+              <td>600 pts</td>
+              <td>75%</td>
+              <td><span class="badge-outcome victory">Victory</span></td>
+            </tr>
+            <tr>
+              <td>5 / 8</td>
+              <td>500 pts</td>
+              <td>62.5%</td>
+              <td><span class="badge-outcome victory">Victory</span></td>
+            </tr>
+            <tr>
+              <td>4 / 8</td>
+              <td>400 pts</td>
+              <td>50%</td>
+              <td><span class="badge-outcome draw">Draw</span></td>
+            </tr>
+            <tr>
+              <td>3 / 8</td>
+              <td>300 pts</td>
+              <td>37.5%</td>
+              <td><span class="badge-outcome draw">Draw</span></td>
+            </tr>
+            <tr>
+              <td>2 / 8</td>
+              <td>200 pts</td>
+              <td>25%</td>
+              <td><span class="badge-outcome defeat">Defeat</span></td>
+            </tr>
+            <tr>
+              <td>1 / 8</td>
+              <td>100 pts</td>
+              <td>12.5%</td>
+              <td><span class="badge-outcome defeat">Defeat</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PART 3: RANK STRUCTURE -->
+      <div class="section">
+        <div class="section-title">
+          <span class="num">3</span> Rank Structure
+        </div>
+        <p style="font-size: 14px; color: #475569; margin-bottom: 16px">
+          There are <strong>9 regular ranks</strong> plus 1 prestige rank. Each
+          regular rank has <strong>3 tiers</strong> (Tier 3 = lowest, Tier 1 =
+          highest). The number of stars needed to fill a tier increases with
+          higher ranks. Every new player starts at
+          <strong>Beginner Tier 3 with 0 stars</strong>.
+        </p>
+        <div class="rank-grid">
+          <div class="rank-card">
+            <div class="rank-index">Rank #0</div>
+            <div class="rank-name">🌱 Beginner</div>
+            <div class="stars-info">3 stars per tier</div>
+          </div>
+          <div class="rank-card">
+            <div class="rank-index">Rank #1</div>
+            <div class="rank-name">📖 Learner</div>
+            <div class="stars-info">3 stars per tier</div>
+          </div>
+          <div class="rank-card">
+            <div class="rank-index">Rank #2</div>
+            <div class="rank-name">🔨 Apprentice</div>
+            <div class="stars-info">4 stars per tier</div>
+          </div>
+          <div class="rank-card">
+            <div class="rank-index">Rank #3</div>
+            <div class="rank-name">⚔️ Skilled</div>
+            <div class="stars-info">4 stars per tier</div>
+          </div>
+          <div class="rank-card">
+            <div class="rank-index">Rank #4</div>
+            <div class="rank-name">🏛️ Expert</div>
+            <div class="stars-info">5 stars per tier</div>
+          </div>
+          <div class="rank-card">
+            <div class="rank-index">Rank #5</div>
+            <div class="rank-name">👑 Master</div>
+            <div class="stars-info">5 stars per tier</div>
+          </div>
+          <div class="rank-card">
+            <div class="rank-index">Rank #6</div>
+            <div class="rank-name">🌀 Grandmaster</div>
+            <div class="stars-info">6 stars per tier</div>
+          </div>
+          <div class="rank-card">
+            <div class="rank-index">Rank #7</div>
+            <div class="rank-name">🔮 Mythic</div>
+            <div class="stars-info">7 stars per tier</div>
+          </div>
+          <div class="rank-card">
+            <div class="rank-index">Rank #8</div>
+            <div class="rank-name">✨ Legend</div>
+            <div class="stars-info">8 stars per tier</div>
+          </div>
+          <div class="rank-card prestige">
+            <div class="rank-index">Rank #9 — Prestige</div>
+            <div class="rank-name">🌟 Legendary Sage</div>
+            <div class="stars-info">
+              Infinite prestige stars · No demotion possible · Achieved by
+              completing Legend Tier 1
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PART 4: PROMOTION & DEMOTION -->
+      <div class="section">
+        <div class="section-title">
+          <span class="num">4</span> Promotion &amp; Demotion
+        </div>
+
+        <h3
+          style="
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #059669;
+          "
+        >
+          ▲ Promotion (Moving Up)
+        </h3>
+        <p style="font-size: 14px; color: #475569; margin-bottom: 10px">
+          When your stars in a tier reach the maximum, you automatically promote
+          to the next tier or rank:
+        </p>
+        <ul
+          style="
+            font-size: 14px;
+            color: #475569;
+            padding-left: 20px;
+            line-height: 2;
+          "
+        >
+          <li>
+            Tier 3 fills up → promotes to <strong>Tier 2</strong>, 0 stars
+          </li>
+          <li>
+            Tier 2 fills up → promotes to <strong>Tier 1</strong>, 0 stars
+          </li>
+          <li>
+            Tier 1 fills up → promotes to <strong>next rank, Tier 3</strong>, 0
+            stars
+          </li>
+          <li>
+            Legend Tier 1 fills up → becomes
+            <strong>Legendary Sage</strong> (prestige, permanent)
+          </li>
+        </ul>
+        <div class="callout green">
+          <strong>Flawless overflow (+2 stars):</strong> If you are at 3/4 stars
+          in a tier and get a Flawless (+2), you fill the tier (4/4) AND the 1
+          extra star carries over into the next tier (1 star into the new tier).
+        </div>
+
+        <div class="example-block">
+          <h4>Promotion Example — Apprentice (4 stars/tier)</h4>
+          <div class="example-step">
+            <span class="step-dot">1</span
+            ><span>Start: Apprentice Tier 2, 3/4 stars</span>
+          </div>
+          <div class="example-step">
+            <span class="step-dot">2</span
+            ><span>Win a Victory (+1 star) → 4/4 stars → tier full</span>
+          </div>
+          <div class="example-step">
+            <span class="step-dot">3</span
+            ><span
+              >Promote to <strong>Apprentice Tier 1, 0/4 stars</strong></span
+            >
+          </div>
+          <div class="example-step">
+            <span class="step-dot">4</span
+            ><span
+              >Win another Victory (+1 star) →
+              <strong>Apprentice Tier 1, 1/4 stars</strong></span
+            >
+          </div>
+        </div>
+
+        <h3
+          style="
+            font-size: 15px;
+            font-weight: 700;
+            margin: 22px 0 10px;
+            color: #dc2626;
+          "
+        >
+          ▼ Demotion (Moving Down)
+        </h3>
+        <p style="font-size: 14px; color: #475569; margin-bottom: 10px">
+          When you lose a star at 0 stars in a tier, you drop down one tier
+          within the same rank:
+        </p>
+        <ul
+          style="
+            font-size: 14px;
+            color: #475569;
+            padding-left: 20px;
+            line-height: 2;
+          "
+        >
+          <li>
+            Lose a star at Tier 2, 0 stars → drops to
+            <strong>Tier 3 at (starsPerTier − 1) stars</strong>
+          </li>
+          <li>
+            Lose a star at Tier 3, 0 stars →
+            <strong>stays at Tier 3, 0 stars</strong> (rank floor — cannot go
+            lower)
+          </li>
+          <li>
+            You can never be demoted to a lower rank, only within tiers of your
+            current rank
+          </li>
+        </ul>
+
+        <div class="example-block">
+          <h4>Demotion Example — Apprentice (4 stars/tier)</h4>
+          <div class="example-step">
+            <span class="step-dot">1</span
+            ><span>At Apprentice Tier 2, 0/4 stars → Defeat (−1 star)</span>
+          </div>
+          <div class="example-step">
+            <span class="step-dot">2</span
+            ><span
+              >Star goes to −1 → triggers demotion → drops to
+              <strong>Apprentice Tier 3, 3/4 stars</strong></span
+            >
+          </div>
+          <div class="example-step">
+            <span class="step-dot">3</span
+            ><span>At Apprentice Tier 3, 0/4 stars → Defeat (−1 star)</span>
+          </div>
+          <div class="example-step">
+            <span class="step-dot">4</span
+            ><span
+              >Rank floor hit → stays at
+              <strong>Apprentice Tier 3, 0/4 stars</strong> (cannot drop
+              further)</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- PART 5: SPP -->
+      <div class="section">
+        <div class="section-title">
+          <span class="num">5</span> Star Protection Points (SPP) 🛡️
+        </div>
+        <p style="font-size: 14px; color: #475569; margin-bottom: 14px">
+          SPP are <strong>shield points</strong> that protect your rank stars
+          from being lost on a Defeat. Maximum SPP = <strong>3</strong>. They
+          are displayed as shield icons on your profile.
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Situation</th>
+              <th>Effect on SPP</th>
+              <th>Effect on Stars</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="badge-outcome draw">Draw</span> outcome</td>
+              <td><strong>+1 SPP</strong></td>
+              <td>No change</td>
+            </tr>
+            <tr>
+              <td>
+                <span class="badge-outcome defeat">Defeat</span> with SPP &gt; 0
+              </td>
+              <td><strong>−1 SPP</strong> (permanently consumed)</td>
+              <td>Star SAVED ✓</td>
+            </tr>
+            <tr>
+              <td>
+                <span class="badge-outcome defeat">Defeat</span> with SPP = 0
+              </td>
+              <td><strong>+1 SPP</strong> (starts rebuilding)</td>
+              <td><strong>−1 Star ✗</strong></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="callout red">
+          <strong>Important:</strong> Each shield is permanently consumed when
+          used. With 3 shields, you can survive 3 consecutive Defeats without
+          losing a star. The 4th Defeat (with 0 SPP) will cost you a star and
+          give you 1 SPP back to start rebuilding.
+        </div>
+
+        <h3
+          style="
+            font-size: 15px;
+            font-weight: 700;
+            margin: 18px 0 10px;
+            color: #1e293b;
+          "
+        >
+          SPP Timeline Example (starting with 3 SPP)
+        </h3>
+        <div class="timeline">
+          <div class="timeline-row header">
+            <span>Game</span><span>Outcome</span><span>SPP Before</span
+            ><span>SPP After</span><span>Stars</span>
+          </div>
+          <div class="timeline-row">
+            <span>1</span>
+            <span><span class="badge-outcome defeat">Defeat</span></span>
+            <span>3</span><span><strong>2</strong></span>
+            <span class="star-saved">★ Saved (shield used)</span>
+          </div>
+          <div class="timeline-row">
+            <span>2</span>
+            <span><span class="badge-outcome defeat">Defeat</span></span>
+            <span>2</span><span><strong>1</strong></span>
+            <span class="star-saved">★ Saved (shield used)</span>
+          </div>
+          <div class="timeline-row">
+            <span>3</span>
+            <span><span class="badge-outcome defeat">Defeat</span></span>
+            <span>1</span><span><strong>0</strong></span>
+            <span class="star-saved">★ Saved (last shield used)</span>
+          </div>
+          <div class="timeline-row">
+            <span>4</span>
+            <span><span class="badge-outcome defeat">Defeat</span></span>
+            <span>0</span><span><strong>1</strong></span>
+            <span class="star-lost">✗ Star LOST (−1 star)</span>
+          </div>
+          <div class="timeline-row">
+            <span>5</span>
+            <span><span class="badge-outcome draw">Draw</span></span>
+            <span>1</span><span><strong>2</strong></span>
+            <span style="color: #64748b">No change</span>
+          </div>
+          <div class="timeline-row">
+            <span>6</span>
+            <span><span class="badge-outcome draw">Draw</span></span>
+            <span>2</span><span><strong>3</strong></span>
+            <span style="color: #64748b">No change (back to full)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PART 6: SBP -->
+      <div class="section">
+        <div class="section-title">
+          <span class="num">6</span> Star Bonus Points (SBP) 💎
+        </div>
+        <p style="font-size: 14px; color: #475569; margin-bottom: 14px">
+          SBP are <strong>diamond bonus points</strong> that can automatically
+          upgrade your rewards when you perform well. Maximum SBP =
+          <strong>5</strong>. They are displayed as diamond icons on your
+          profile.
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Outcome</th>
+              <th>SBP Gained</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <span class="badge-outcome flawless">Flawless</span> (natural)
+              </td>
+              <td>+1 SBP</td>
+            </tr>
+            <tr>
+              <td><span class="badge-outcome victory">Victory</span></td>
+              <td>+1 SBP</td>
+            </tr>
+            <tr>
+              <td><span class="badge-outcome draw">Draw</span></td>
+              <td>0 SBP</td>
+            </tr>
+            <tr>
+              <td><span class="badge-outcome defeat">Defeat</span></td>
+              <td>0 SBP</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3
+          style="
+            font-size: 15px;
+            font-weight: 700;
+            margin: 18px 0 10px;
+            color: #1e293b;
+          "
+        >
+          Auto-Redemption Rules
+        </h3>
+        <p style="font-size: 14px; color: #475569; margin-bottom: 10px">
+          SBP is automatically spent <em>before</em> rewards are applied, in two
+          scenarios:
+        </p>
+
+        <div class="callout green">
+          <strong>Rule 1 — Victory Upgrade:</strong> If your game outcome is
+          Victory AND you have <strong>3 or more SBP</strong>, the system
+          automatically spends 3 SBP and upgrades your rewards to
+          <strong>Flawless level</strong> (+2 stars, +200 XP, +5 coins). This is
+          called a <em>"Bonus-Boosted"</em> Flawless.
+        </div>
+
+        <div class="callout yellow">
+          <strong>Rule 2 — Full-Cap Drain:</strong> If your game outcome is a
+          natural Flawless AND your SBP is at the maximum cap of
+          <strong>5</strong>, all 5 SBP are drained to 0, allowing you to start
+          rebuilding again.
+        </div>
+
+        <div class="example-block">
+          <h4>SBP Bonus-Boosted Example</h4>
+          <div class="example-step">
+            <span class="step-dot">1</span
+            ><span
+              >Player wins 3 Victories in a row → SBP accumulates to
+              <strong>3</strong></span
+            >
+          </div>
+          <div class="example-step">
+            <span class="step-dot">2</span
+            ><span
+              >4th game: 5/8 correct = 500 pts = 62.5% → would normally be
+              <span class="badge-outcome victory" style="font-size: 11px"
+                >Victory</span
+              ></span
+            >
+          </div>
+          <div class="example-step">
+            <span class="step-dot">3</span
+            ><span
+              >SBP = 3 → auto-redeem triggers: spends 3 SBP → SBP drops to
+              <strong>0</strong></span
+            >
+          </div>
+          <div class="example-step">
+            <span class="step-dot">4</span
+            ><span
+              >Rewards upgraded to
+              <span class="badge-outcome flawless" style="font-size: 11px"
+                >Flawless</span
+              >: +2 stars, +200 XP, +5 coins</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- PART 7: PROFILE XP -->
+      <div class="section">
+        <div class="section-title">
+          <span class="num">7</span> Profile XP &amp; Level
+        </div>
+        <p style="font-size: 14px; color: #475569; margin-bottom: 14px">
+          Profile XP is completely <strong>separate from rank stars</strong> and
+          <strong>never decreases</strong>. It tracks lifetime activity and
+          unlocks profile levels. The XP required to go from level N to N+1:
+        </p>
+        <code class="formula"
+          >XP needed for level N → N+1 = 100 + (N − 1) × 150</code
+        >
+
+        <table>
+          <thead>
+            <tr>
+              <th>Level</th>
+              <th>XP needed to reach next level</th>
+              <th>Cumulative XP to reach this level</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Level 1</td>
+              <td>100 XP</td>
+              <td>0 XP</td>
+            </tr>
+            <tr>
+              <td>Level 2</td>
+              <td>250 XP</td>
+              <td>100 XP</td>
+            </tr>
+            <tr>
+              <td>Level 3</td>
+              <td>400 XP</td>
+              <td>350 XP</td>
+            </tr>
+            <tr>
+              <td>Level 4</td>
+              <td>550 XP</td>
+              <td>750 XP</td>
+            </tr>
+            <tr>
+              <td>Level 5</td>
+              <td>700 XP</td>
+              <td>1,300 XP</td>
+            </tr>
+            <tr>
+              <td>Level 6</td>
+              <td>850 XP</td>
+              <td>2,000 XP</td>
+            </tr>
+            <tr>
+              <td>Level 7</td>
+              <td>1,000 XP</td>
+              <td>2,850 XP</td>
+            </tr>
+            <tr>
+              <td>Level 8</td>
+              <td>1,150 XP</td>
+              <td>3,850 XP</td>
+            </tr>
+            <tr>
+              <td>Level 9</td>
+              <td>1,300 XP</td>
+              <td>5,000 XP</td>
+            </tr>
+            <tr>
+              <td>Level 10</td>
+              <td>1,450 XP</td>
+              <td>6,300 XP</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PART 8: FULL WORKED EXAMPLE -->
+      <div class="section">
+        <div class="section-title">
+          <span class="num">8</span> Full Worked Example
+        </div>
+        <div class="callout">
+          <strong>Starting State:</strong> Apprentice Tier 2 · 1/4 stars · SPP =
+          2 shields · SBP = 1 diamond · Profile XP = 530 · Coins = 83
+        </div>
+
+        <div class="example-block">
+          <h4>
+            Game 1 — 3/8 correct (all 1st attempt) → 300 pts → 37.5% → 🤝 Draw
+          </h4>
+          <div class="example-step">
+            <span class="step-dot">→</span
+            ><span
+              >Rank stars: <strong>no change</strong> (still 1/4 stars,
+              Apprentice Tier 2)</span
+            >
+          </div>
+          <div class="example-step">
+            <span class="step-dot">→</span
+            ><span
+              >SPP: <strong>+1</strong> → now <strong>3 SPP</strong> (full,
+              capped at 3)</span
+            >
+          </div>
+          <div class="example-step">
+            <span class="step-dot">→</span
+            ><span>XP: +60 → now <strong>590 XP</strong></span>
+          </div>
+          <div class="example-step">
+            <span class="step-dot">→</span
+            ><span>Coins: +1 → now <strong>84 coins</strong></span>
+          </div>
+          <div class="example-step">
+            <span class="step-dot">→</span
+            ><span>SBP: unchanged → still <strong>1 SBP</strong></span>
+          </div>
+        </div>
+
+        <div class="example-block">
+          <h4>Game 2 — 2/8 correct → 200 pts → 25% → ❌ Defeat</h4>
+          <div class="example-step">
+            <span class="step-dot">→</span
+            ><span
+              >SPP = 3 (greater than 0) → <strong>shield activates</strong>,
+              consumes 1 SPP</span
+            >
+          </div>
+          <div class="example-step">
+            <span class="step-dot">→</span
+            ><span>Rank stars: <strong>saved</strong> (still 1/4 stars)</span>
+          </div>
+          <div class="example-step">
+            <span class="step-dot">→</span
+            ><span>SPP: 3 → <strong>2 SPP</strong></span>
+          </div>
+          <div class="example-step">
+            <span class="step-dot">→</span
+            ><span>XP: +30 → now <strong>620 XP</strong></span>
+          </div>
+          <div class="example-step">
+            <span class="step-dot">→</span><span>Coins: +0</span>
+          </div>
+        </div>
+
+        <div class="example-block">
+          <h4>
+            Game 3 — 6/8 correct (1st attempt) → 600 pts → 75% → ✅ Victory
+          </h4>
+          <div class="example-step">
+            <span class="step-dot">→</span
+            ><span>SBP = 1 (less than 3) → no auto-redeem, normal Victory</span>
+          </div>
+          <div class="example-step">
+            <span class="step-dot">→</span
+            ><span
+              >Rank stars: <strong>+1</strong> → now
+              <strong>2/4 stars</strong> in Apprentice Tier 2</span
+            >
+          </div>
+          <div class="example-step">
+            <span class="step-dot">→</span
+            ><span>SBP: +1 → now <strong>2 SBP</strong></span>
+          </div>
+          <div class="example-step">
+            <span class="step-dot">→</span
+            ><span>XP: +120 → now <strong>740 XP</strong></span>
+          </div>
+          <div class="example-step">
+            <span class="step-dot">→</span
+            ><span>Coins: +3 → now <strong>87 coins</strong></span>
+          </div>
+        </div>
+
+        <div class="example-block">
+          <h4>
+            Game 4 — 7/8 correct (1st attempt) → 700 pts → 87.5% → 🌟 Flawless
+          </h4>
+          <div class="example-step">
+            <span class="step-dot">→</span
+            ><span
+              >SBP = 2 (less than 5) → no full-cap drain, normal Flawless</span
+            >
+          </div>
+          <div class="example-step">
+            <span class="step-dot">→</span
+            ><span
+              >Rank stars: <strong>+2</strong> → 2 + 2 = 4/4 → tier full →
+              <strong>PROMOTE to Apprentice Tier 1, 0/4 stars</strong></span
+            >
+          </div>
+          <div class="example-step">
+            <span class="step-dot">→</span
+            ><span>SBP: +1 → now <strong>3 SBP</strong></span>
+          </div>
+          <div class="example-step">
+            <span class="step-dot">→</span
+            ><span>XP: +200 → now <strong>940 XP</strong></span>
+          </div>
+          <div class="example-step">
+            <span class="step-dot">→</span
+            ><span>Coins: +5 → now <strong>92 coins</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="footer">
+        MathsApp Internal Documentation &nbsp;·&nbsp; Ranking &amp; Quiz Point
+        System &nbsp;·&nbsp; May 2026
+        <br />To save as PDF: Open in Chrome or Edge → File → Print → Change
+        destination to "Save as PDF" → Save
+      </div>
     </div>
-  </div>
-
-  <!-- PART 2: GAME OUTCOMES -->
-  <div class="section">
-    <div class="section-title"><span class="num">2</span> Game Outcomes</div>
-    <p style="font-size:14px; color:#475569; margin-bottom:14px;">
-      The game percentage determines the <strong>outcome</strong>, which drives all rank star changes and rewards:
-    </p>
-    <table>
-      <thead>
-        <tr>
-          <th>Outcome</th>
-          <th>Score Threshold</th>
-          <th>Min Points</th>
-          <th>Rank Stars</th>
-          <th>XP</th>
-          <th>Coins</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><span class="badge-outcome flawless">🌟 Flawless</span></td>
-          <td>≥ 87.5%</td>
-          <td>≥ 700 pts</td>
-          <td><strong>+2</strong></td>
-          <td>+200</td>
-          <td>+5</td>
-        </tr>
-        <tr>
-          <td><span class="badge-outcome victory">✅ Victory</span></td>
-          <td>≥ 62.5%</td>
-          <td>≥ 500 pts</td>
-          <td><strong>+1</strong></td>
-          <td>+120</td>
-          <td>+3</td>
-        </tr>
-        <tr>
-          <td><span class="badge-outcome draw">🤝 Draw</span></td>
-          <td>≥ 37.5%</td>
-          <td>≥ 300 pts</td>
-          <td><strong>0</strong></td>
-          <td>+60</td>
-          <td>+1</td>
-        </tr>
-        <tr>
-          <td><span class="badge-outcome defeat">❌ Defeat</span></td>
-          <td>&lt; 37.5%</td>
-          <td>&lt; 300 pts</td>
-          <td><strong>−1</strong> (see SPP)</td>
-          <td>+30</td>
-          <td>0</td>
-        </tr>
-      </tbody>
-    </table>
-    <div class="callout">
-      <strong>Note:</strong> XP is always awarded regardless of outcome, so every game contributes to your profile level even on a Defeat.
-    </div>
-
-    <h3 style="font-size:15px; font-weight:700; margin: 22px 0 10px; color:#1e293b;">Quick Score Reference</h3>
-    <table>
-      <thead><tr><th>Questions Correct (all 1st attempt)</th><th>Score</th><th>%</th><th>Outcome</th></tr></thead>
-      <tbody>
-        <tr><td>8 / 8</td><td>800 pts</td><td>100%</td><td><span class="badge-outcome flawless">Flawless</span></td></tr>
-        <tr><td>7 / 8</td><td>700 pts</td><td>87.5%</td><td><span class="badge-outcome flawless">Flawless</span></td></tr>
-        <tr><td>6 / 8</td><td>600 pts</td><td>75%</td><td><span class="badge-outcome victory">Victory</span></td></tr>
-        <tr><td>5 / 8</td><td>500 pts</td><td>62.5%</td><td><span class="badge-outcome victory">Victory</span></td></tr>
-        <tr><td>4 / 8</td><td>400 pts</td><td>50%</td><td><span class="badge-outcome draw">Draw</span></td></tr>
-        <tr><td>3 / 8</td><td>300 pts</td><td>37.5%</td><td><span class="badge-outcome draw">Draw</span></td></tr>
-        <tr><td>2 / 8</td><td>200 pts</td><td>25%</td><td><span class="badge-outcome defeat">Defeat</span></td></tr>
-        <tr><td>1 / 8</td><td>100 pts</td><td>12.5%</td><td><span class="badge-outcome defeat">Defeat</span></td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- PART 3: RANK STRUCTURE -->
-  <div class="section">
-    <div class="section-title"><span class="num">3</span> Rank Structure</div>
-    <p style="font-size:14px; color:#475569; margin-bottom:16px;">
-      There are <strong>9 regular ranks</strong> plus 1 prestige rank. Each regular rank has <strong>3 tiers</strong>
-      (Tier 3 = lowest, Tier 1 = highest). The number of stars needed to fill a tier increases with higher ranks.
-      Every new player starts at <strong>Beginner Tier 3 with 0 stars</strong>.
-    </p>
-    <div class="rank-grid">
-      <div class="rank-card">
-        <div class="rank-index">Rank #0</div>
-        <div class="rank-name">🌱 Beginner</div>
-        <div class="stars-info">3 stars per tier</div>
-      </div>
-      <div class="rank-card">
-        <div class="rank-index">Rank #1</div>
-        <div class="rank-name">📖 Learner</div>
-        <div class="stars-info">3 stars per tier</div>
-      </div>
-      <div class="rank-card">
-        <div class="rank-index">Rank #2</div>
-        <div class="rank-name">🔨 Apprentice</div>
-        <div class="stars-info">4 stars per tier</div>
-      </div>
-      <div class="rank-card">
-        <div class="rank-index">Rank #3</div>
-        <div class="rank-name">⚔️ Skilled</div>
-        <div class="stars-info">4 stars per tier</div>
-      </div>
-      <div class="rank-card">
-        <div class="rank-index">Rank #4</div>
-        <div class="rank-name">🏛️ Expert</div>
-        <div class="stars-info">5 stars per tier</div>
-      </div>
-      <div class="rank-card">
-        <div class="rank-index">Rank #5</div>
-        <div class="rank-name">👑 Master</div>
-        <div class="stars-info">5 stars per tier</div>
-      </div>
-      <div class="rank-card">
-        <div class="rank-index">Rank #6</div>
-        <div class="rank-name">🌀 Grandmaster</div>
-        <div class="stars-info">6 stars per tier</div>
-      </div>
-      <div class="rank-card">
-        <div class="rank-index">Rank #7</div>
-        <div class="rank-name">🔮 Mythic</div>
-        <div class="stars-info">7 stars per tier</div>
-      </div>
-      <div class="rank-card">
-        <div class="rank-index">Rank #8</div>
-        <div class="rank-name">✨ Legend</div>
-        <div class="stars-info">8 stars per tier</div>
-      </div>
-      <div class="rank-card prestige">
-        <div class="rank-index">Rank #9 — Prestige</div>
-        <div class="rank-name">🌟 Legendary Sage</div>
-        <div class="stars-info">Infinite prestige stars · No demotion possible · Achieved by completing Legend Tier 1</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- PART 4: PROMOTION & DEMOTION -->
-  <div class="section">
-    <div class="section-title"><span class="num">4</span> Promotion &amp; Demotion</div>
-
-    <h3 style="font-size:15px; font-weight:700; margin-bottom:10px; color:#059669;">▲ Promotion (Moving Up)</h3>
-    <p style="font-size:14px; color:#475569; margin-bottom:10px;">
-      When your stars in a tier reach the maximum, you automatically promote to the next tier or rank:
-    </p>
-    <ul style="font-size:14px; color:#475569; padding-left:20px; line-height:2;">
-      <li>Tier 3 fills up → promotes to <strong>Tier 2</strong>, 0 stars</li>
-      <li>Tier 2 fills up → promotes to <strong>Tier 1</strong>, 0 stars</li>
-      <li>Tier 1 fills up → promotes to <strong>next rank, Tier 3</strong>, 0 stars</li>
-      <li>Legend Tier 1 fills up → becomes <strong>Legendary Sage</strong> (prestige, permanent)</li>
-    </ul>
-    <div class="callout green">
-      <strong>Flawless overflow (+2 stars):</strong> If you are at 3/4 stars in a tier and get a Flawless (+2), you fill the tier (4/4) AND the 1 extra star carries over into the next tier (1 star into the new tier).
-    </div>
-
-    <div class="example-block">
-      <h4>Promotion Example — Apprentice (4 stars/tier)</h4>
-      <div class="example-step"><span class="step-dot">1</span><span>Start: Apprentice Tier 2, 3/4 stars</span></div>
-      <div class="example-step"><span class="step-dot">2</span><span>Win a Victory (+1 star) → 4/4 stars → tier full</span></div>
-      <div class="example-step"><span class="step-dot">3</span><span>Promote to <strong>Apprentice Tier 1, 0/4 stars</strong></span></div>
-      <div class="example-step"><span class="step-dot">4</span><span>Win another Victory (+1 star) → <strong>Apprentice Tier 1, 1/4 stars</strong></span></div>
-    </div>
-
-    <h3 style="font-size:15px; font-weight:700; margin: 22px 0 10px; color:#dc2626;">▼ Demotion (Moving Down)</h3>
-    <p style="font-size:14px; color:#475569; margin-bottom:10px;">
-      When you lose a star at 0 stars in a tier, you drop down one tier within the same rank:
-    </p>
-    <ul style="font-size:14px; color:#475569; padding-left:20px; line-height:2;">
-      <li>Lose a star at Tier 2, 0 stars → drops to <strong>Tier 3 at (starsPerTier − 1) stars</strong></li>
-      <li>Lose a star at Tier 3, 0 stars → <strong>stays at Tier 3, 0 stars</strong> (rank floor — cannot go lower)</li>
-      <li>You can never be demoted to a lower rank, only within tiers of your current rank</li>
-    </ul>
-
-    <div class="example-block">
-      <h4>Demotion Example — Apprentice (4 stars/tier)</h4>
-      <div class="example-step"><span class="step-dot">1</span><span>At Apprentice Tier 2, 0/4 stars → Defeat (−1 star)</span></div>
-      <div class="example-step"><span class="step-dot">2</span><span>Star goes to −1 → triggers demotion → drops to <strong>Apprentice Tier 3, 3/4 stars</strong></span></div>
-      <div class="example-step"><span class="step-dot">3</span><span>At Apprentice Tier 3, 0/4 stars → Defeat (−1 star)</span></div>
-      <div class="example-step"><span class="step-dot">4</span><span>Rank floor hit → stays at <strong>Apprentice Tier 3, 0/4 stars</strong> (cannot drop further)</span></div>
-    </div>
-  </div>
-
-  <!-- PART 5: SPP -->
-  <div class="section">
-    <div class="section-title"><span class="num">5</span> Star Protection Points (SPP) 🛡️</div>
-    <p style="font-size:14px; color:#475569; margin-bottom:14px;">
-      SPP are <strong>shield points</strong> that protect your rank stars from being lost on a Defeat.
-      Maximum SPP = <strong>3</strong>. They are displayed as shield icons on your profile.
-    </p>
-
-    <table>
-      <thead><tr><th>Situation</th><th>Effect on SPP</th><th>Effect on Stars</th></tr></thead>
-      <tbody>
-        <tr><td><span class="badge-outcome draw">Draw</span> outcome</td><td><strong>+1 SPP</strong></td><td>No change</td></tr>
-        <tr><td><span class="badge-outcome defeat">Defeat</span> with SPP &gt; 0</td><td><strong>−1 SPP</strong> (permanently consumed)</td><td>Star SAVED ✓</td></tr>
-        <tr><td><span class="badge-outcome defeat">Defeat</span> with SPP = 0</td><td><strong>+1 SPP</strong> (starts rebuilding)</td><td><strong>−1 Star ✗</strong></td></tr>
-      </tbody>
-    </table>
-
-    <div class="callout red">
-      <strong>Important:</strong> Each shield is permanently consumed when used. With 3 shields, you can survive 3 consecutive Defeats without losing a star. The 4th Defeat (with 0 SPP) will cost you a star and give you 1 SPP back to start rebuilding.
-    </div>
-
-    <h3 style="font-size:15px; font-weight:700; margin: 18px 0 10px; color:#1e293b;">SPP Timeline Example (starting with 3 SPP)</h3>
-    <div class="timeline">
-      <div class="timeline-row header">
-        <span>Game</span><span>Outcome</span><span>SPP Before</span><span>SPP After</span><span>Stars</span>
-      </div>
-      <div class="timeline-row">
-        <span>1</span>
-        <span><span class="badge-outcome defeat">Defeat</span></span>
-        <span>3</span><span><strong>2</strong></span>
-        <span class="star-saved">★ Saved (shield used)</span>
-      </div>
-      <div class="timeline-row">
-        <span>2</span>
-        <span><span class="badge-outcome defeat">Defeat</span></span>
-        <span>2</span><span><strong>1</strong></span>
-        <span class="star-saved">★ Saved (shield used)</span>
-      </div>
-      <div class="timeline-row">
-        <span>3</span>
-        <span><span class="badge-outcome defeat">Defeat</span></span>
-        <span>1</span><span><strong>0</strong></span>
-        <span class="star-saved">★ Saved (last shield used)</span>
-      </div>
-      <div class="timeline-row">
-        <span>4</span>
-        <span><span class="badge-outcome defeat">Defeat</span></span>
-        <span>0</span><span><strong>1</strong></span>
-        <span class="star-lost">✗ Star LOST (−1 star)</span>
-      </div>
-      <div class="timeline-row">
-        <span>5</span>
-        <span><span class="badge-outcome draw">Draw</span></span>
-        <span>1</span><span><strong>2</strong></span>
-        <span style="color:#64748b;">No change</span>
-      </div>
-      <div class="timeline-row">
-        <span>6</span>
-        <span><span class="badge-outcome draw">Draw</span></span>
-        <span>2</span><span><strong>3</strong></span>
-        <span style="color:#64748b;">No change (back to full)</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- PART 6: SBP -->
-  <div class="section">
-    <div class="section-title"><span class="num">6</span> Star Bonus Points (SBP) 💎</div>
-    <p style="font-size:14px; color:#475569; margin-bottom:14px;">
-      SBP are <strong>diamond bonus points</strong> that can automatically upgrade your rewards when you perform well.
-      Maximum SBP = <strong>5</strong>. They are displayed as diamond icons on your profile.
-    </p>
-
-    <table>
-      <thead><tr><th>Outcome</th><th>SBP Gained</th></tr></thead>
-      <tbody>
-        <tr><td><span class="badge-outcome flawless">Flawless</span> (natural)</td><td>+1 SBP</td></tr>
-        <tr><td><span class="badge-outcome victory">Victory</span></td><td>+1 SBP</td></tr>
-        <tr><td><span class="badge-outcome draw">Draw</span></td><td>0 SBP</td></tr>
-        <tr><td><span class="badge-outcome defeat">Defeat</span></td><td>0 SBP</td></tr>
-      </tbody>
-    </table>
-
-    <h3 style="font-size:15px; font-weight:700; margin: 18px 0 10px; color:#1e293b;">Auto-Redemption Rules</h3>
-    <p style="font-size:14px; color:#475569; margin-bottom:10px;">
-      SBP is automatically spent <em>before</em> rewards are applied, in two scenarios:
-    </p>
-
-    <div class="callout green">
-      <strong>Rule 1 — Victory Upgrade:</strong> If your game outcome is Victory AND you have <strong>3 or more SBP</strong>,
-      the system automatically spends 3 SBP and upgrades your rewards to <strong>Flawless level</strong>
-      (+2 stars, +200 XP, +5 coins). This is called a <em>"Bonus-Boosted"</em> Flawless.
-    </div>
-
-    <div class="callout yellow">
-      <strong>Rule 2 — Full-Cap Drain:</strong> If your game outcome is a natural Flawless AND your SBP is at the
-      maximum cap of <strong>5</strong>, all 5 SBP are drained to 0, allowing you to start rebuilding again.
-    </div>
-
-    <div class="example-block">
-      <h4>SBP Bonus-Boosted Example</h4>
-      <div class="example-step"><span class="step-dot">1</span><span>Player wins 3 Victories in a row → SBP accumulates to <strong>3</strong></span></div>
-      <div class="example-step"><span class="step-dot">2</span><span>4th game: 5/8 correct = 500 pts = 62.5% → would normally be <span class="badge-outcome victory" style="font-size:11px;">Victory</span></span></div>
-      <div class="example-step"><span class="step-dot">3</span><span>SBP = 3 → auto-redeem triggers: spends 3 SBP → SBP drops to <strong>0</strong></span></div>
-      <div class="example-step"><span class="step-dot">4</span><span>Rewards upgraded to <span class="badge-outcome flawless" style="font-size:11px;">Flawless</span>: +2 stars, +200 XP, +5 coins</span></div>
-    </div>
-  </div>
-
-  <!-- PART 7: PROFILE XP -->
-  <div class="section">
-    <div class="section-title"><span class="num">7</span> Profile XP &amp; Level</div>
-    <p style="font-size:14px; color:#475569; margin-bottom:14px;">
-      Profile XP is completely <strong>separate from rank stars</strong> and <strong>never decreases</strong>.
-      It tracks lifetime activity and unlocks profile levels. The XP required to go from level N to N+1:
-    </p>
-    <code class="formula">XP needed for level N → N+1  =  100 + (N − 1) × 150</code>
-
-    <table>
-      <thead><tr><th>Level</th><th>XP needed to reach next level</th><th>Cumulative XP to reach this level</th></tr></thead>
-      <tbody>
-        <tr><td>Level 1</td><td>100 XP</td><td>0 XP</td></tr>
-        <tr><td>Level 2</td><td>250 XP</td><td>100 XP</td></tr>
-        <tr><td>Level 3</td><td>400 XP</td><td>350 XP</td></tr>
-        <tr><td>Level 4</td><td>550 XP</td><td>750 XP</td></tr>
-        <tr><td>Level 5</td><td>700 XP</td><td>1,300 XP</td></tr>
-        <tr><td>Level 6</td><td>850 XP</td><td>2,000 XP</td></tr>
-        <tr><td>Level 7</td><td>1,000 XP</td><td>2,850 XP</td></tr>
-        <tr><td>Level 8</td><td>1,150 XP</td><td>3,850 XP</td></tr>
-        <tr><td>Level 9</td><td>1,300 XP</td><td>5,000 XP</td></tr>
-        <tr><td>Level 10</td><td>1,450 XP</td><td>6,300 XP</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- PART 8: FULL WORKED EXAMPLE -->
-  <div class="section">
-    <div class="section-title"><span class="num">8</span> Full Worked Example</div>
-    <div class="callout">
-      <strong>Starting State:</strong> Apprentice Tier 2 · 1/4 stars · SPP = 2 shields · SBP = 1 diamond · Profile XP = 530 · Coins = 83
-    </div>
-
-    <div class="example-block">
-      <h4>Game 1 — 3/8 correct (all 1st attempt) → 300 pts → 37.5% → 🤝 Draw</h4>
-      <div class="example-step"><span class="step-dot">→</span><span>Rank stars: <strong>no change</strong> (still 1/4 stars, Apprentice Tier 2)</span></div>
-      <div class="example-step"><span class="step-dot">→</span><span>SPP: <strong>+1</strong> → now <strong>3 SPP</strong> (full, capped at 3)</span></div>
-      <div class="example-step"><span class="step-dot">→</span><span>XP: +60 → now <strong>590 XP</strong></span></div>
-      <div class="example-step"><span class="step-dot">→</span><span>Coins: +1 → now <strong>84 coins</strong></span></div>
-      <div class="example-step"><span class="step-dot">→</span><span>SBP: unchanged → still <strong>1 SBP</strong></span></div>
-    </div>
-
-    <div class="example-block">
-      <h4>Game 2 — 2/8 correct → 200 pts → 25% → ❌ Defeat</h4>
-      <div class="example-step"><span class="step-dot">→</span><span>SPP = 3 (greater than 0) → <strong>shield activates</strong>, consumes 1 SPP</span></div>
-      <div class="example-step"><span class="step-dot">→</span><span>Rank stars: <strong>saved</strong> (still 1/4 stars)</span></div>
-      <div class="example-step"><span class="step-dot">→</span><span>SPP: 3 → <strong>2 SPP</strong></span></div>
-      <div class="example-step"><span class="step-dot">→</span><span>XP: +30 → now <strong>620 XP</strong></span></div>
-      <div class="example-step"><span class="step-dot">→</span><span>Coins: +0</span></div>
-    </div>
-
-    <div class="example-block">
-      <h4>Game 3 — 6/8 correct (1st attempt) → 600 pts → 75% → ✅ Victory</h4>
-      <div class="example-step"><span class="step-dot">→</span><span>SBP = 1 (less than 3) → no auto-redeem, normal Victory</span></div>
-      <div class="example-step"><span class="step-dot">→</span><span>Rank stars: <strong>+1</strong> → now <strong>2/4 stars</strong> in Apprentice Tier 2</span></div>
-      <div class="example-step"><span class="step-dot">→</span><span>SBP: +1 → now <strong>2 SBP</strong></span></div>
-      <div class="example-step"><span class="step-dot">→</span><span>XP: +120 → now <strong>740 XP</strong></span></div>
-      <div class="example-step"><span class="step-dot">→</span><span>Coins: +3 → now <strong>87 coins</strong></span></div>
-    </div>
-
-    <div class="example-block">
-      <h4>Game 4 — 7/8 correct (1st attempt) → 700 pts → 87.5% → 🌟 Flawless</h4>
-      <div class="example-step"><span class="step-dot">→</span><span>SBP = 2 (less than 5) → no full-cap drain, normal Flawless</span></div>
-      <div class="example-step"><span class="step-dot">→</span><span>Rank stars: <strong>+2</strong> → 2 + 2 = 4/4 → tier full → <strong>PROMOTE to Apprentice Tier 1, 0/4 stars</strong></span></div>
-      <div class="example-step"><span class="step-dot">→</span><span>SBP: +1 → now <strong>3 SBP</strong></span></div>
-      <div class="example-step"><span class="step-dot">→</span><span>XP: +200 → now <strong>940 XP</strong></span></div>
-      <div class="example-step"><span class="step-dot">→</span><span>Coins: +5 → now <strong>92 coins</strong></span></div>
-    </div>
-  </div>
-
-  <!-- FOOTER -->
-  <div class="footer">
-    MathsApp Internal Documentation &nbsp;·&nbsp; Ranking &amp; Quiz Point System &nbsp;·&nbsp; May 2026
-    <br>To save as PDF: Open in Chrome or Edge → File → Print → Change destination to "Save as PDF" → Save
-  </div>
-
-</div>
-</body>
+  </body>
 </html>

@@ -351,7 +351,11 @@ const LandingPage = () => {
             <button className="lp-footer-link" onClick={openRegister}>
               Register
             </button>
-            <Link to="/docs" className="lp-footer-link" style={{ textDecoration: "none" }}>
+            <Link
+              to="/docs"
+              className="lp-footer-link"
+              style={{ textDecoration: "none" }}
+            >
               Docs
             </Link>
           </div>
